@@ -1,13 +1,97 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+.poppins-regular {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  font-family: "Poppins", sans-serif !important;
+  font-weight: 200;
+  font-style: normal;
+}
+
+.height-100vh {
+  height: 100vh !important;
+}
+
+.sf-grey {
+  color: #72757a !important;
+}
+
+.bg-grey {
+  background-color: #72757a !important;
+}
+
+.no-link-decoration {
+  text-decoration: none !important;
+}
+
+.light-blue {
+  color: #52abff !important;
+}
+
+.bg-light-blue {
+  background-color: #52abff !important;
+}
+
+.passlist-body {
+  display: grid;
+
+  grid-auto-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row dense;
+  grid-template-areas: 
+  "lists edit"; 
+
+}
+
+.lists {
+  display: grid;
+  border-right: 1px solid grey;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "list-1"
+    "list-2";
+  grid-area: lists;
+}
+
+
+.list-2 { grid-area: list-2; 
+          border-top: 1px solid grey; 
+          overflow-y: scroll;
+          }
+.list-1 { grid-area: list-1;
+
+        }
+
+.edit {
+  /* display: grid;
+  grid-auto-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 0px 0px;
+  grid-area: edit; */
+}
+
+
+.hover-grey {
+  /* background-color: gray;  */
+  /* Change "gray" to your desired shade of grey */
+  cursor:pointer;
+  transition: background-color 0.2s ease; /* Optional: smoother background color transition */
+}
+
+.hover-grey:hover {
+  background-color: #cccccc; /* Lighter grey on hover (optional) */
+
+}
+
+
+.invisible {
+  display: none;
 }
