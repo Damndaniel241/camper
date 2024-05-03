@@ -12,6 +12,12 @@ body {
   font-style: normal;
 }
 
+.btn,
+button,
+[type="button"] {
+  background-color: var(--bs-btn-bg) !important;
+}
+
 .height-100vh {
   height: 100vh !important;
 }
@@ -44,9 +50,7 @@ body {
   grid-template-rows: 1fr;
   gap: 0px 0px;
   grid-auto-flow: row dense;
-  grid-template-areas: 
-  "lists edit"; 
-
+  grid-template-areas: "lists edit";
 }
 
 .lists {
@@ -61,14 +65,14 @@ body {
   grid-area: lists;
 }
 
-
-.list-2 { grid-area: list-2; 
-          border-top: 1px solid grey; 
-          overflow-y: scroll;
-          }
-.list-1 { grid-area: list-1;
-
-        }
+.list-2 {
+  grid-area: list-2;
+  border-top: 1px solid grey;
+  overflow-y: scroll;
+}
+.list-1 {
+  grid-area: list-1;
+}
 
 .edit {
   /* display: grid;
@@ -78,19 +82,16 @@ body {
   grid-area: edit; */
 }
 
-
 .hover-grey {
   /* background-color: gray;  */
   /* Change "gray" to your desired shade of grey */
-  cursor:pointer;
+  cursor: pointer;
   transition: background-color 0.2s ease; /* Optional: smoother background color transition */
 }
 
 .hover-grey:hover {
   background-color: #cccccc; /* Lighter grey on hover (optional) */
-
 }
-
 
 .invisible {
   display: none;

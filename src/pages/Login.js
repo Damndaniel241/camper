@@ -34,11 +34,11 @@ function Login() {
       <div className="form-group">
 
 
-      <div class="mb-3">
+      <div className="mb-3">
           
             <input
                 type="text"
-                class="form-control"
+                className="form-control"
                 name=""
                 id=""
                 aria-describedby="helpId"
@@ -58,7 +58,7 @@ function Login() {
          
         </div>
       </div>
-      <Link to="/main" className="btn btn-primary mt-3" type="submit">Sign in</Link>
+      <Link to="/main2" className="btn btn-primary mt-3" type="submit">Sign in</Link>
       
     </form>
     <small className='sf-grey'>Don't have an account?&nbsp;<Link to="/register" className='no-link-decoration text-primary '>Register</Link></small>

@@ -3,54 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="useful.css">
     <title>Password Steganography</title>
 </head>
 <body>
+    <div class="container">
+        <h2>Password Steganography</h2>
+        <div class="form-group">
+            <label for="password">Enter Password:</label>
+            <input type="text" id="password" placeholder="Password">
+        </div>
+        <div class="form-group">
+            <label for="image">Select Image:</label>
+            <input type="file" id="image" accept="image/*">
+        </div>
+        <button onclick="hidePasswordInImage()">Hide Password</button>
+        <div class="result" id="result"></div>
+
+        
+        <div class="decrypt">
+            <h3>Decrypt Password</h3>
+            <button onclick="decryptPassword()">Decrypt Password</button>
+            <p id="decryptedPassword"></p>
+        </div>
+    </div>
+
+
+
     <script>
-        // Paste // Function to convert text to binary
-function textToBinary(text) {
-    let binary = '';
-    for (let i = 0; i < text.length; i++) {
-        const binChar = text[i].charCodeAt(0).toString(2);
-        binary += '0'.repeat(8 - binChar.length) + binChar; // Ensure each character is 8 bits long
-    }
-    return binary;
+const password = document.getElementById('password').value;
+const imageInput = document.getElementById('image');
+const selectedImage = imageInput.files[0];
+
+if (!selectedImage) {
+    alert('Please select an image.');
+    return;
 }
 
-// Function to hide password in image using steganography
-function hidePasswordInImage(password, imageSrc) {
-    // Convert password to binary
-    const binaryPassword = textToBinary(password);
+const reader = new FileReader();
 
-    // Load image
-    const img = new Image();
-    img.onload = function() {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
+reader.onload = function(event) {
+    const imageSrc = event.target.result;
 
-        // Embed binary password data into image
-        for (let i = 0; i < binaryPassword.length; i++) {
-            const bit = parseInt(binaryPassword[i]);
-            const pixel = ctx.getImageData(i % img.width, Math.floor(i / img.width), 1, 1);
-            const data = pixel.data;
-            data[0] = (data[0] & 0xFE) | bit; // Modify least significant bit of red channel
-            ctx.putImageData(pixel, i % img.width, Math.floor(i / img.width));
+    // Function to convert text to binary
+    function textToBinary(text) {
+        let binary = '';
+        for (let i = 0; i < text.length; i++) {
+            const binChar = text[i].charCodeAt(0).toString(2);
+            binary += '0'.repeat(8 - binChar.length) + binChar; // Ensure each character is 8 bits long
+        }
+        return binary;
+    }
+
+    // Function to hide password in image using steganography
+    function hidePasswordInImage(password, imageSrc) {
+        // Convert password to binary
+        const binaryPassword = textToBinary(password);
+
+        // Load image
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+
+            // Embed binary password data into image
+            for (let i = 0; i < binaryPassword.length; i++) {
+                const bit = parseInt(binaryPassword[i]);
+                const pixel = ctx.getImageData(i % img.width, Math.floor(i / img.width), 1, 1);
+                const data = pixel.data;
+                data[0] = (data[0] & 0xFE) | bit; // Modify least significant bit of red channel
+                ctx.putImageData(pixel, i % img.width, Math.floor(i / img.width));
+            }
+
+            // Get the image data URL with hidden password
+            const hiddenPasswordImageSrc = canvas.toDataURL();
+            console.log('Image with hidden password:', hiddenPasswordImageSrc);
+        };
+        img.src = imageSrc;
+    }
+
+    // Example usage
+    hidePasswordInImage(password, imageSrc);
+};
+
+reader.readAsDataURL(selectedImage);
+
+
+function decryptPassword() {
+            const imageInput = document.getElementById('image');
+            const selectedImage = imageInput.files[0];
+
+            if (!selectedImage) {
+                alert('Please select an image.');
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const imageSrc = event.target.result;
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    let binaryPassword = '';
+                    for (let i = 0; i < img.width * img.height; i++) {
+                        const pixel = ctx.getImageData(i % img.width, Math.floor(i / img.width), 1, 1);
+                        const data = pixel.data;
+                        const bit = data[0] & 1; // Extract least significant bit of red channel
+                        binaryPassword += bit;
+                    }
+                    const password = binaryToText(binaryPassword);
+                    document.getElementById('decryptedPassword').innerText = 'Decrypted Password: ' + password;
+                };
+                img.src = imageSrc;
+            };
+
+            reader.readAsDataURL(selectedImage);
         }
 
-        // Get the image data URL with hidden password
-        const hiddenPasswordImageSrc = canvas.toDataURL();
-        console.log('Image with hidden password:', hiddenPasswordImageSrc);
-    };
-    img.src = imageSrc;
-}
+        function binaryToText(binary) {
+            let text = '';
+            for (let i = 0; i < binary.length; i += 8) {
+                const byte = binary.substr(i, 8);
+                text += String.fromCharCode(parseInt(byte, 2));
+            }
+            return text;
+        }
 
-// Example usage
-const password = 'MySecretPassword';
-const imageSrc = 'image1.jpg';
-hidePasswordInImage(password, imageSrc);
 
     </script>
 </body>

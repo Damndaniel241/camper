@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import { FaArrowLeftLong } from "react-icons/fa6";
+import PasswordValidator from 'react-password-validattor'
 
 
 
@@ -119,7 +120,52 @@ function Register() {
               />
             </div>
 
-            <div className="col">
+            <div className="mb-3">
+              
+              <input
+                type="password"
+                className="form-control"
+                name=""
+                id=""
+                placeholder="Password"
+              />
+            </div>
+
+
+            <div className="mb-3">
+            
+              <input
+                type="password"
+                className="form-control"
+    
+                id=""
+                
+                onChange={(e) => setConfirmPassword(e.target.value)} value={confirmPassword} name="confirmedPassword" placeholder="Please re-enter your password" 
+              />
+            </div>
+
+            <PasswordValidator 
+              rules={['minLength', 
+                      'maxLength', 
+                      'specialChar', 
+                      'number', 
+                      'capital', 
+                      'matches', 
+                      'lowercase', 
+                      'notEmpty', 
+                      'shouldNotContain']}
+              // forbiddenWords={['John', 'Doe']} 
+              minLength={8}
+              maxLength={32}
+              password={password}
+              confirmedPassword={confirmPassword}
+              iconSize={16}
+              // onValidatorChange={onValidatorChangeHandler}
+              config={{ showProgressBar: true }} />
+            
+            
+
+            {/* <div className="col">
               <input
                 type="password"
                 className="form-control"
@@ -130,7 +176,7 @@ function Register() {
                 onChange={handleChange}
                 required
               />
-              {/* Progress bar and feedback components */}
+            
               <div className="progress" style={{ height: "5px" }}>
                 <div
                   className={`progress-bar ${feedbackColor} progress-bar-striped progress-bar-animated`}
@@ -172,7 +218,7 @@ function Register() {
               {!passwordMatch && (
                 <div className="invalid-feedback">Passwords do not match</div>
               )}
-            </div>
+            </div> */}
           </div>
           <Link to="/login" className="btn btn-primary" type="submit">
             Submit
