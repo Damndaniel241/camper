@@ -133,7 +133,6 @@ export default Main;
 //     <p>No logins found. When you save a password in Camper, it will show up here</p>
 //   </div>
 // ) : (
-//   <div>
 //     {/* Render the list of login components */}
 //     {logins.map((login, index) => (
 //       <div key={index}>{login}
