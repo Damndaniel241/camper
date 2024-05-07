@@ -185,7 +185,7 @@ function Main2() {
               aria-expanded="false"
             >
               {" "}
-              <BsThreeDots />{" "}
+              <BsThreeDots />
             </button>
             <ul class="dropdown-menu">
               <li>
