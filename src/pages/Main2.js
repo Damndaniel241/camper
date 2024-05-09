@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Header from "../components/Header";
 import { LuPlus } from "react-icons/lu";
 import { BsThreeDots } from "react-icons/bs";
@@ -6,6 +6,7 @@ import { PiGlobeSimple } from "react-icons/pi";
 import { FaPencilAlt } from "react-icons/fa";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import PasswordValidator from "react-password-validattor";
+import axios from "axios";
 
 import {
   BrowserRouter as Router,
@@ -18,7 +19,15 @@ import {
 } from "react-router-dom";
 import Item from "./Item";
 
+const API_URL = 'https://api.unsplash.com/search/photos'
+
+const SECRET_KEY = 'xYE3C6G32RH2kTCZz7FA0rTueA38UFXyDR_5YuKj8KI'
+const IMAGES_PER_PAGE = 20;
+
+
 function Main2() {
+  
+  
   const [password, setPassword] = useState("");
   const [showNewEdit, setShowNewEdit] = useState(false);
   const [logins, setLogins] = useState([]);
@@ -31,6 +40,11 @@ function Main2() {
   const [activeItem, setActiveItem] = useState(null);
   const editContainerRef = useRef(null);
   const [editMode, setEditMode] = useState(false);
+
+  const [images, setImages] = useState([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page,setPage] = useState(1);
+
 
   const handleItemClick = (accountName) => {
     setActiveItem(accountName);
@@ -114,6 +128,38 @@ function Main2() {
     setPassword(newPassword);
   };
 
+  const searchInput = useRef(null);
+
+
+  useEffect(()=>{
+      
+      fetchImages();
+  },[page])
+
+  const fetchImages= async () =>{
+    try{
+        const { data } = await axios.get(`${API_URL}?query=${searchInput.current.value}&page=${page}&per_page=${IMAGES_PER_PAGE}&client_id=${process.env.REACT_APP_API_KEY}`)
+        
+
+       setImages(data.results);
+       setTotalPages(data.total_pages);
+      } catch (error){
+        console.log(error);
+      }
+  }
+
+  const resetSearch = () => {
+     fetchImages();
+    setPage(1);
+  }
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    console.log(searchInput.current.value)
+    resetSearch();
+  }
+
+
   return (
     <>
       <Header />
@@ -184,7 +230,7 @@ function Main2() {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              {" "}
+            
               <BsThreeDots />
             </button>
             <ul class="dropdown-menu">
@@ -281,7 +327,7 @@ function Main2() {
 
                     <div class="mb-3">
                         <label for="" class="form-label">
-                          Password
+                          Select a picture
                         </label>
                         <input
                           type="file"
@@ -293,6 +339,72 @@ function Main2() {
                           placeholder=""
                         />
                       </div>
+
+                      <p>or search for a picture online</p>
+                    
+               <div class="mb-3 d-flex gap-2">
+                
+                <input
+                  type="text"
+                  class="form-control"
+                  name=""
+                  id=""
+                  aria-describedby="helpId"
+                  placeholder="Type something to search..."
+                  ref = {searchInput}
+                />
+                
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  onClick={handleSearch}
+                >
+                Search
+                </button>
+                
+                
+               </div>
+
+               <div className="d-flex flex-column">
+               <div className="images container my-4">
+                <div className="row gx-3 gy-3">
+                  {
+                    images.map((image) =>{
+                      return (
+                        <div className="col-3 rounded-2" style={{cursor:"pointer"}}>
+                        <img 
+                        key={image.id}
+                        src={image.urls.small} 
+                        alt={image.alt_description} 
+                        className="image"
+                        />
+                        </div>
+                      )
+                    })
+                  }</div>
+               </div>
+               <div className="buttons align-self-center d-flex gap-3">
+              {page>1 &&  <button
+                  type="button"
+                  class="btn btn-primary"
+                  onClick={() => setPage(page -1 )}
+                >
+                  Previous
+                </button>}
+                {page<totalPages && <button
+                  type="button"
+                  class="btn btn-primary"
+                  onClick={() => setPage(page + 1 )}
+                >
+                  Next
+                </button>}
+                
+                
+               </div>
+               </div>
+               
+                    
+                    
 
                     <div className="d-flex justify-content-end align-items-center ">
                       <button

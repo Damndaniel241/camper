@@ -14,7 +14,7 @@ function Home() {
 <div className='d-flex justify-content-center align-items-center  flex-column'>
 <img className="text-center" src={realLogo1} height="120em" width="120em"/>
     <div className='h5 my-2 text-center  '>Welcome to Camper Password Manager</div>
-    <h6 className='text-center sf-grey'>Easily manage your stored passwords on by leveraging the power of Steganography, 
+    <h6 className='text-center sf-grey my-3'>Easily manage your stored passwords on by leveraging the power of Steganography, 
         ensuring they are accessible across all your devices.</h6>
         </div>
 

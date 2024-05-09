@@ -139,7 +139,8 @@ function Register() {
           <button onClick={handleSignUp} className="btn btn-primary" type="submit">
             Sign Up
           </button>
-        {/* </form> */}
+        {/* </form     ..........m..mhgnhnhnhn ,      */}
+        {/* https://youtu.be/e8p1zSNmK7Q?si=QRchy2iLP-nHIM3V */}
         <small className='sf-grey'>Already have an account?&nbsp;<Link to="/login" className='no-link-decoration text-primary '>Sign In</Link></small>
       </div>
     </>

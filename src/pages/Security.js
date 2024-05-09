@@ -22,10 +22,10 @@ const Security = () => {
     let hasErrors = false;
 
     Object.entries(answers).forEach(([question, answer]) => {
-        if (!answer) {
-          formErrors[question] = 'This field is required';
-          hasErrors = true;
-        }
+        if (!answer.trim()) { // trim() to remove leading/trailing whitespace
+            formErrors[question] = 'This field is required';
+            hasErrors = true;
+          }
       });
       
       setErrors(formErrors);
@@ -33,7 +33,7 @@ const Security = () => {
       if (!hasErrors) {
         // Proceed with answer submission
         // For now, just navigate to the next page
-        // navigate('/passkey');
+        navigate('/passkey');
       }
     };
   
