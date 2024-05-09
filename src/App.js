@@ -5,13 +5,13 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Main from './pages/Main';
-// import Create from '.pages/Create';
 import Read from './pages/Read'
 import NewEdit from './pages/NewEdit';
 import Main2 from './pages/Main2';   
 import Read2 from './pages/Read';    
 import NewEdit2 from './pages/NewEdit2';                                
 import Security from './pages/Security';
+import Security2 from './pages/Security2';
 import PassKey from './pages/PassKey';
 
 
@@ -30,7 +30,7 @@ function App() {
     <Route path="/read2" element={<Read2/>}/>
     <Route path="/security" element={<Security/>}/>
     <Route path="/passkey" element={<PassKey/>}/>
-
+    <Route path="/security2" element={<Security2/>}/>
     </Routes>
     </BrowserRouter>
   );

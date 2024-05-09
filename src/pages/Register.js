@@ -4,6 +4,9 @@ import Header from "../components/Header";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import PasswordValidator from 'react-password-validattor'
 
+import { FaEye } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
+
 
 
 
@@ -12,6 +15,11 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordMatch, setPasswordMatch] = useState(true);
 
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
 
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -65,12 +73,12 @@ function Register() {
               <input
                 type="text"
                 className="form-control"
-                name=""
+                name="username"
                 id=""
                 aria-describedby="helpId"
                 placeholder="UserName"
-                value={formData.username} 
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })} 
+                value=""
+                
               />
             </div>
 
@@ -78,40 +86,59 @@ function Register() {
               <input
                 type="email"
                 className="form-control"
-                name=""
+                name="email"
                 id=""
                 aria-describedby="helpId"
                 placeholder="Email"
-                value={formData.email} 
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                value=""
+               
               />
             </div>
 
 
-            <div className="mb-3">
+            <div className="mb-3 d-flex gap-1">
               
               <input
-                type="password"
+                type={isPasswordVisible ? 'text' : 'password'}
                 className="form-control"
-                name=""
+                name="password"
                 id=""
                 placeholder="Password"
-                value={formData.password} 
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
               />
+              <span className="password-toggle align-self-center" onClick={togglePasswordVisibility}>
+        {isPasswordVisible ? (
+          <FaEye/>
+        ) : (
+          <FaEyeSlash/>
+        )}
+      </span>
             </div>
 
-{/* 
-            <div className="mb-3">
-            
-              <input
-                type="password"
-                className="form-control"
-                id=""
-                onChange={(e) => setConfirmPassword(e.target.value)} value={confirmPassword} name="confirmedPassword" placeholder="Please re-enter your password" 
-              />
-            </div> */}
 
+            <div class="mb-3 d-flex gap-1">
+             
+              <input
+                type={isPasswordVisible ? 'text' : 'password'}
+                class="form-control"
+                id=""
+                aria-describedby="helpId"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={confirmPassword} 
+                name="confirmedPassword" 
+                placeholder="Please re-enter your password"
+                
+              />
+               <span className="password-toggle align-self-center" onClick={togglePasswordVisibility}>
+        {isPasswordVisible ? (
+          <FaEye/>
+        ) : (
+          <FaEyeSlash/>
+        )}
+      </span>
+            </div>
+            
             <PasswordValidator 
               rules={['minLength', 
                       'maxLength', 
@@ -120,8 +147,9 @@ function Register() {
                       'capital', 
                       'matches', 
                       'lowercase', 
-                      'notEmpty', 
-                      'shouldNotContain']}
+                      'notEmpty'
+                      // 'shouldNotContain'
+                    ]}
               // forbiddenWords={['John', 'Doe']} 
               minLength={8}
               maxLength={32}

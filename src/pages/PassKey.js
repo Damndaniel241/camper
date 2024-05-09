@@ -3,62 +3,49 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Header from "../components/Header";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import jsPDF from "jspdf";
+
+// pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const GeneratePasskeyPage = () => {
   const navigate = useNavigate();
   const [passkey, setPasskey] = useState("");
 
-  //   const generatePasskey = () => {
-  //     // Generate a unique passkey using uuid
-  //     const newPasskey = uuidv4();
-  //     setPasskey(newPasskey);
-  //   };
+  const generatePasskey = () => {
+    // Generate a unique passkey using uuid
+    const newPasskey = uuidv4();
+    setPasskey(newPasskey);
+  };
 
-  //   const handleDownloadPDF = () => {
-  //     // Logic to export passkey to PDF
-  //     // You can use a library like react-pdf or jsPDF for this
-  //     // Here, I'm just simulating a download
-  //     const fakePdfDownloadLink = document.createElement('a');
-  //     fakePdfDownloadLink.href = `data:application/pdf,${encodeURIComponent(passkey)}`;
-  //     fakePdfDownloadLink.download = 'passkey.pdf';
-  //     fakePdfDownloadLink.click();
-  //   };
-
-  // const generatePasskey = () => {
-  //   // Generate a unique passkey
-  //   const newPasskey = 'GeneratedPasskey123'; // You can replace this with your actual passkey generation logic
-  //   setPasskey(newPasskey);
-
-  //   // Create PDF blob
-  //   const pdfBlob = new Blob([passkey], { type: 'application/pdf' });
-
-  //   // Create download link
-  //   const downloadLink = document.createElement('a');
-  //   downloadLink.href = window.URL.createObjectURL(pdfBlob);
-  //   downloadLink.setAttribute('download', 'passkey.pdf');
-
-  //   // Trigger download
-  //   document.body.appendChild(downloadLink);
-  //   downloadLink.click();
-
-  //   // Cleanup
-  //   document.body.removeChild(downloadLink);
-   
+  const generatePdf = () => {
+    const doc = new jsPDF();
+    doc.text("This piece of text should be protected at all times", 10, 10);
+    doc.text("Your one-time passkey:", 10, 40);
+    doc.text(passkey, 10, 50);
+    doc.save("passkey.pdf");
+  };
 
   return (
     <>
       <Header />
 
       <div className="d-flex flex-column container justify-content-center align-items-center height-100vh  gap-3">
-        {/* <button className="btn btn-primary " onClick={generatePasskey}>
+        <button className="btn btn-primary " onClick={generatePasskey}>
           Generate Passkey
-        </button> */}
-        {/* <button className='btn btn-primary' onClick={handleDownloadPDF}>Download Passkey PDF</button> */}
+        </button>
+
         <button onClick={() => navigate("/security")}>
           Back to Security Questions
         </button>
         <h2>Your One-Time Passkey:</h2>
         <p>{passkey}</p>
+        {passkey && (
+          <button className="btn btn-primary" onClick={generatePdf}>
+            Download Passkey PDF
+          </button>
+        )}
       </div>
     </>
   );

@@ -2,9 +2,18 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 
+import { FaEye } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
+
+
 function Login() {
 
-   
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible(!isPasswordVisible);
+  };
+
     const handleChange = (event) => {
         const value = event.target.value;
         // setPassword(value);
@@ -34,31 +43,37 @@ function Login() {
       <div className="form-group">
 
 
-      <div className="mb-3">
+      <div className="mb-3 ">
           
             <input
-                type="text"
+                type='text'
                 className="form-control"
                 name=""
                 id=""
                 aria-describedby="helpId"
                 placeholder="Username"
             />
-            
+           
         </div>
 
 
-        <div className="col">
+        <div className="col d-flex gap-1">
           
           <input
-            type="password"
+            type={isPasswordVisible ? 'text' : 'password'}
             className="form-control"
              placeholder='password'
           />
-         
+           <span className="password-toggle align-self-center" onClick={togglePasswordVisibility}>
+        {isPasswordVisible ? (
+          <FaEye/>
+        ) : (
+          <FaEyeSlash/>
+        )}
+      </span>
         </div>
       </div>
-      <Link to="/main2" className="btn btn-primary mt-3" type="submit">Sign in</Link>
+      <Link to="/main" className="btn btn-primary mt-3" type="submit">Sign in</Link>
       
     </form>
     <small className='sf-grey'>Don't have an account?&nbsp;<Link to="/register" className='no-link-decoration text-primary '>Register</Link></small>
