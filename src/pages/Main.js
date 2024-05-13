@@ -8,6 +8,8 @@ import { RiDeleteBin6Fill } from "react-icons/ri";
 import PasswordValidator from "react-password-validattor";
 import axios from "axios";
 
+// import Steganographer from 'steganographer';
+
 import {
   BrowserRouter as Router,
   Route,
@@ -26,7 +28,9 @@ const IMAGES_PER_PAGE = 20;
 
 function Main() {
   
-  
+  const [file, setFile] = useState(null);
+  const [encodedFile, setEncodedFile] = useState(null);
+  const [decodedMessage, setDecodedMessage] = useState('');
   const [password, setPassword] = useState("");
   const [showNewEdit, setShowNewEdit] = useState(false);
   const [logins, setLogins] = useState([]);
@@ -44,8 +48,17 @@ function Main() {
   const [totalPages, setTotalPages] = useState(0);
   const [page,setPage] = useState(1);
   const [errorMsg, setErrorMsg] = useState('');
-  const [selectedImage, setSelectedImage] = useState(null);
+ 
+  const { createCanvas, loadImage, ImageData } = require('canvas');
+  const { xorWith } = require('lodash'); // For simple encryption, you can use a library like lodash
 
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [text, setText] = useState('');
+  const [embeddedImage, setEmbeddedImage] = useState(null);
+  const [decryptedText, setDecryptedText] = useState('');
+  const [key, setKey] = useState('');
+  const [encodedImage, setEncodedImage] = useState(null);
+  const [decodedText, setDecodedText] = useState('');
 
   const handleItemClick = (accountName) => {
     setActiveItem(accountName);
@@ -214,6 +227,123 @@ useEffect(() => {
 
 
 
+// Function to encrypt text
+function encrypt(text, key) {
+    // Simple XOR encryption
+    return xorWith(text, key, (a, b) => a.charCodeAt(0) ^ b.charCodeAt(0));
+}
+
+// Function to decrypt text
+function decrypt(encryptedText, key) {
+    // Simple XOR decryption
+    return xorWith(encryptedText, key, (a, b) => String.fromCharCode(a ^ b.charCodeAt(0))).join('');
+}
+
+// Function to embed encrypted text into image
+async function embedTextInImage(imageFile, text, key) {
+    const image = await loadImage(imageFile);
+    const canvas = createCanvas(image.width, image.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0);
+
+    const encryptedText = encrypt(text, key);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Embed encrypted text into image data
+    for (let i = 0; i < encryptedText.length; i++) {
+        data[i] = encryptedText.charCodeAt(i);
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+    return canvas.toBuffer();
+}
+
+
+  const handleImageChange = (event) => {
+        const file = event.target.files[0];
+        setSelectedImage(file);
+    };
+
+  const handleTextChange = (event) => {
+        setText(event.target.value);
+    };
+
+    const handleKeyChange = (event) => {
+    setKey(event.target.value);
+  };
+
+// Function to extract encrypted text from image
+async function extractTextFromImage(imageFile, key) {
+    const image = await loadImage(imageFile);
+    const canvas = createCanvas(image.width, image.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Extract encrypted text from image data
+    let encryptedText = '';
+    for (let i = 0; i < data.length; i++) {
+        if (data[i] !== 0) {
+            encryptedText += String.fromCharCode(data[i]);
+        } else {
+            break; // Text ends with null character
+        }
+    }
+  }
+
+
+
+
+  //  const handleEncode = async () => {
+  //   if (!selectedImage || !text) {
+  //     alert('Please select an image and enter text to encode.');
+  //     return;
+  //   }
+
+  //   const encodedImageBuffer = await embedTextInImage(selectedImage, text, key);
+  //   const encodedImageBlob = new Blob([encodedImageBuffer]);
+  //   setEncodedImage(URL.createObjectURL(encodedImageBlob));
+  // };
+
+  // const handleDecode = async () => {
+  //   if (!selectedImage) {
+  //     alert('Please select an image to decode.');
+  //     return;
+  //   }
+
+  //   const decodedText = await extractTextFromImage(selectedImage, key);
+  //   setDecodedText(decodedText);
+  // };
+
+      const embedText = async (event) => {
+        
+        if (!selectedImage || !text) return;
+
+        try {
+            const embeddedImageBuffer = await embedTextInImage(selectedImage, text, 'mySecretKey');
+            setEmbeddedImage(embeddedImageBuffer);
+        } catch (error) {
+            console.error('Error embedding text:', error);
+        }
+    };
+
+
+    const extractText = async (event) => {
+      
+        if (!selectedImage) return;
+
+        try {
+            const extractedText = await extractTextFromImage(selectedImage, 'mySecretKey');
+            setDecryptedText(extractedText);
+        } catch (error) {
+            console.error('Error extracting text:', error);
+        }
+    };
+
+
   return (
     <>
       <Header />
@@ -289,7 +419,7 @@ useEffect(() => {
             </button>
             <ul class="dropdown-menu">
               <li>
-                <div onClick={clearLogins} class="dropdown-item" href="#">
+                <div onClick={clearLogins} class="dropdown-item" style={{cursor:"pointer"}} href="#">
                   Remove All Accounts
                 </div>
               </li>
@@ -388,11 +518,23 @@ useEffect(() => {
                           class="form-control form-control-sm"
                           name=""
                           id=""
-                          
+                          accept="image/*"
                           aria-describedby="helpId"
                           placeholder=""
-                          onChange={handleFileSelect}
+                          onChange={handleImageChange}
                         />
+                        <div className="d-flex gap-2 flex-column ">
+                      <input placeholder="type secret message" class="form-label" value={text} onChange={handleTextChange} />
+                      <input type="text" value={key} placeholder="enter key" onChange={handleKeyChange} />
+                      
+             <button className="btn btn-primary" onClick={() => embedText(selectedImage, text)}>Encode</button>
+            <button className="btn btn-primary" onClick={() => extractText(selectedImage)}>Decode</button>
+           {embeddedImage && <img src={URL.createObjectURL(new Blob([embeddedImage]))} alt="Embedded Image" />}
+            {decryptedText && <p>Decrypted Text: {decryptedText}</p>} 
+           
+           
+            </div>
+            
                       </div>
 
                       <p>or search for a picture online</p>
@@ -455,9 +597,10 @@ useEffect(() => {
                   Next
                 </button>}
                 
-           {selectedImage && <img src={getSelectedImageUrl(selectedImage)} alt="Selected Image" />}
+           
                 
                </div>
+               {selectedImage && <img src={getSelectedImageUrl(selectedImage)} alt="Selected Image" />}
                </div>
                
                     
@@ -617,6 +760,6 @@ useEffect(() => {
       </div>
     </>
   );
-}
+                  };
 
-export default Main;  
+export default Main;
