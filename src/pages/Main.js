@@ -587,28 +587,9 @@ const extractText = async () => {
                         onChange={handleImageChange}
                       />
                       <div className="d-flex gap-2 flex-column ">
-                        {/* <input
-                          placeholder="type secret message"
-                          class="form-label"
-                          value={text}
-                          onChange={handleTextChange}
-                        /> */}
+                       
 
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          onClick={embedText}
-                        >
-                          Encode
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          onClick={extractText}
-                        >
-                          Decode
-                        </button>
-
+                       
 
 
                         {embeddedImage && (

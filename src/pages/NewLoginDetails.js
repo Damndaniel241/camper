@@ -51,9 +51,19 @@ const NewLoginDetails = ({ newLogin }) => {
                           <span className="d-flex gap-2 flex-column ">
                             <h5 clasName="sf-grey">Password</h5>
                           {imageUrl &&   <h5><img src={imageUrl} alt="image password" height="400rem" width="400rem"/></h5>}
+
+<button
+type="button"
+className="btn btn-primary"
+>
+Decode
+</button>
                           </span>
                         </div>
                       </div>
+
+
+
   );
 };
 
