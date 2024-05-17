@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom'; 
 import { PiGlobeSimple } from "react-icons/pi";
 
-function Item({ accountName,password,onClick}) {
+function Item({ accountName,itemId,onClick}) {
   return (
   <>
    

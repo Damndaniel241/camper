@@ -1,12 +1,13 @@
-import React, { useState, useRef, useEffect,useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Header from "../components/Header";
 import { LuPlus } from "react-icons/lu";
 import { BsThreeDots } from "react-icons/bs";
 import { PiGlobeSimple } from "react-icons/pi";
-import { FaPencilAlt,FaEye,FaEyeSlash } from "react-icons/fa";
+import { FaPencilAlt, FaEye, FaEyeSlash } from "react-icons/fa";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import PasswordValidator from "react-password-validattor";
 import axios from "axios";
+
 
 // import Steganographer from 'steganographer';
 
@@ -21,16 +22,16 @@ import {
 } from "react-router-dom";
 import Item from "./Item";
 
-const API_URL = 'https://api.unsplash.com/search/photos'
+import NewLoginDetails from './NewLoginDetails';
+
+const API_URL = "https://api.unsplash.com/search/photos";
 
 const IMAGES_PER_PAGE = 20;
 
-
 function Main() {
-  
   const [file, setFile] = useState(null);
   const [encodedFile, setEncodedFile] = useState(null);
-  const [decodedMessage, setDecodedMessage] = useState('');
+  const [decodedMessage, setDecodedMessage] = useState("");
   const [password, setPassword] = useState("");
   const [showNewEdit, setShowNewEdit] = useState(false);
   const [logins, setLogins] = useState([]);
@@ -46,33 +47,40 @@ function Main() {
 
   const [images, setImages] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
-  const [page,setPage] = useState(1);
-  const [errorMsg, setErrorMsg] = useState('');
- 
-  const { createCanvas, loadImage, ImageData } = require('canvas');
-  const { xorWith } = require('lodash'); // For simple encryption, you can use a library like lodash
+  const [page, setPage] = useState(1);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const { createCanvas, loadImage, ImageData } = require("canvas");
+  const { xorWith } = require("lodash"); // For simple encryption, you can use a library like lodash
 
   const [selectedImage, setSelectedImage] = useState(null);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [embeddedImage, setEmbeddedImage] = useState(null);
-  const [decryptedText, setDecryptedText] = useState('');
-  const [key, setKey] = useState('');
-  const [encodedImage, setEncodedImage] = useState(null);
-  const [decodedText, setDecodedText] = useState('');
+  const [decryptedText, setDecryptedText] = useState("");
+  // const [key, setKey] = useState('');
+  const [newLogin, setNewLogin] = useState(null);
+  const [selectedLogin, setSelectedLogin] = useState(null);
+  
+  const [embeddedImageDataURL, setEmbeddedImageDataURL] = useState('');
 
-  const handleItemClick = (accountName) => {
-    setActiveItem(accountName);
+  const handleItemClick = (login) => {
+    setActiveItem(login);
+    // setSelectedLogin(login);
     if (editContainerRef.current) {
       editContainerRef.current.scrollIntoView({ behavior: "smooth" });
     }
     setEditMode(false);
   };
 
-
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
+  const [isEditPasswordVisible, setIsEditPasswordVisible] = useState(false);
+  
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
+  };
+
+  const toggleEditPasswordVisibility = () => {
+    setIsEditPasswordVisible(!isEditPasswordVisible);
   };
 
   const clearLogins = () => {
@@ -97,17 +105,25 @@ function Main() {
       id: logins.length + 1, // You may need an id for each login item
       accountName: accountName,
       password: password,
+      selectedImage: selectedImage,
     };
 
     setLogins([...logins, newLogin]);
 
+    setNewLogin(newLogin);
+
     console.log(logins);
+  };
+
+
+  const handleLoadLogin = (login) => {
+    setSelectedLogin(login);
   };
 
   const removeActiveItem = () => {
     if (activeItem) {
       const updatedLogins = logins.filter(
-        (login) => login.accountName !== activeItem
+        (login) => login.itemId !== activeItem
       );
       setLogins(updatedLogins);
       setActiveItem(null);
@@ -120,6 +136,9 @@ function Main() {
     setShowEdit(false);
     setAccountName("");
     setPassword("");
+    setSelectedImage(null);
+    setImages([]);
+    setTotalPages(null);
   };
 
   const generatePassword = () => {
@@ -151,99 +170,100 @@ function Main() {
 
   const searchInput = useRef(null);
 
+  const fetchImages = useCallback(async () => {
+    try {
+      if (searchInput.current.value) {
+        setErrorMsg("");
+        const { data } = await axios.get(
+          `${API_URL}?query=${searchInput.current.value}&page=${page}&per_page=${IMAGES_PER_PAGE}&client_id=${process.env.REACT_APP_API_KEY}`
+        );
 
-  const fetchImages= useCallback(async () =>{
-    try{
-      if (searchInput.current.value){
-        setErrorMsg('');
-        const { data } = await axios.get(`${API_URL}?query=${searchInput.current.value}&page=${page}&per_page=${IMAGES_PER_PAGE}&client_id=${process.env.REACT_APP_API_KEY}`)
-        
-
-       setImages(data.results);
-       setTotalPages(data.total_pages);
+        setImages(data.results);
+        setTotalPages(data.total_pages);
       }
-      } catch (error){
-        setErrorMsg('Error fetching images. Try again soon');
-        console.log(error);
-      }
-  },[page]);
+    } catch (error) {
+      setErrorMsg("Error fetching images. Try again soon");
+      console.log(error);
+    }
+  }, [page]);
 
-  useEffect(()=>{
-      
-      fetchImages();
-  },[fetchImages])
+  useEffect(() => {
+    fetchImages();
+  }, [fetchImages]);
 
-  
+
 
   const resetSearch = () => {
-     fetchImages();
+    fetchImages();
     setPage(1);
-  }
+  };
+
 
   const handleSearch = (event) => {
     event.preventDefault();
-    console.log(searchInput.current.value)
+    console.log(searchInput.current.value);
     resetSearch();
-  }
+  };
 
 
   const fileToBlob = (file) => {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsArrayBuffer(file);
-  });
-};
-
-const convertFileToBlob = async (file) => {
-  const blob = await fileToBlob(file);
-  return new Blob([blob], { type: file.type });
-};
-
-// ...
-
-const handleFileSelect = (event) => {
-  const file = event.target.files[0];
-  convertFileToBlob(file).then((blob) => setSelectedImage(blob));
-};
-
-const getSelectedImageUrl = (image) => {
-  if (image instanceof File) {
-    return URL.createObjectURL(image);
-  } else if (typeof image === 'object' && image.hasOwnProperty('urls')) {
-    return image.urls.small;
-  } else {
-    return '';
-  }
-};
-
-useEffect(() => {
-  if (selectedImage instanceof File) {
-    const url = URL.createObjectURL(selectedImage);
-    // return () => URL.createObjectURL(selectedImage);
-    return () => URL.revokeObjectURL(url);
-  }
-}, [selectedImage]);
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsArrayBuffer(file);
+    });
+  };
 
 
+  const convertFileToBlob = async (file) => {
+    const blob = await fileToBlob(file);
+    return new Blob([blob], { type: file.type });
+  };
 
-// Function to encrypt text
-function encrypt(text, key) {
+  // ...
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    convertFileToBlob(file).then((blob) => setSelectedImage(blob));
+  };
+
+  const getSelectedImageUrl = (image) => {
+    if (image instanceof File) {
+      return URL.createObjectURL(image);
+    } else if (typeof image === "object" && image.hasOwnProperty("urls")) {
+      return image.urls.small;
+    } else {
+      return "";
+    }
+  };
+
+  useEffect(() => {
+    if (selectedImage instanceof File) {
+      const url = URL.createObjectURL(selectedImage);
+      // return () => URL.createObjectURL(selectedImage);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [selectedImage]);
+
+  // Function to encrypt text
+  function encrypt(text, key) {
     // Simple XOR encryption
     return xorWith(text, key, (a, b) => a.charCodeAt(0) ^ b.charCodeAt(0));
-}
+  }
 
-// Function to decrypt text
-function decrypt(encryptedText, key) {
+  // Function to decrypt text
+  function decrypt(encryptedText, key) {
     // Simple XOR decryption
-    return xorWith(encryptedText, key, (a, b) => String.fromCharCode(a ^ b.charCodeAt(0))).join('');
-}
+    return xorWith(encryptedText, key, (a, b) =>
+      String.fromCharCode(a ^ b.charCodeAt(0))
+    ).join("");
+  }
 
-// Function to embed encrypted text into image
-async function embedTextInImage(imageFile, text, key) {
+  ///Function to embed encrypted text into image 
+  async function embedTextInImage(imageFile, text, key) {
     const image = await loadImage(imageFile);
     const canvas = createCanvas(image.width, image.height);
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     ctx.drawImage(image, 0, 0);
 
     const encryptedText = encrypt(text, key);
@@ -252,97 +272,135 @@ async function embedTextInImage(imageFile, text, key) {
 
     // Embed encrypted text into image data
     for (let i = 0; i < encryptedText.length; i++) {
-        data[i] = encryptedText.charCodeAt(i);
+      data[i] = encryptedText.charCodeAt(i);
     }
 
     ctx.putImageData(imageData, 0, 0);
-    return canvas.toBuffer();
-}
-
-
-  const handleImageChange = (event) => {
-        const file = event.target.files[0];
-        setSelectedImage(file);
-    };
-
-  const handleTextChange = (event) => {
-        setText(event.target.value);
-    };
-
-    const handleKeyChange = (event) => {
-    setKey(event.target.value);
-  };
-
-// Function to extract encrypted text from image
-async function extractTextFromImage(imageFile, key) {
-    const image = await loadImage(imageFile);
-    const canvas = createCanvas(image.width, image.height);
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(image, 0, 0);
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-
-    // Extract encrypted text from image data
-    let encryptedText = '';
-    for (let i = 0; i < data.length; i++) {
-        if (data[i] !== 0) {
-            encryptedText += String.fromCharCode(data[i]);
-        } else {
-            break; // Text ends with null character
-        }
-    }
+    return canvas.toDataURL();
   }
 
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedImage(file);
+  };
+
+  const handleTextChange = (event) => {
+    setText(event.target.value);
+  };
+
+// 2
+//   async function embedTextInImage(imageFile, text, key) {
+//     const image = await loadImage(imageFile);
+//     const canvas = createCanvas(image.width, image.height);
+//     const ctx = canvas.getContext('2d');
+//     ctx.drawImage(image, 0, 0);
+
+//     const embeddedImageDataURL = await encrypt(text, canvas.toDataURL(), key);
+
+//     // Convert data URL to buffer
+//     const embeddedImageBuffer = Buffer.from(embeddedImageDataURL.split(',')[1], 'base64');
+
+//     return embeddedImageBuffer;
+// }
+  
 
 
 
-  //  const handleEncode = async () => {
-  //   if (!selectedImage || !text) {
-  //     alert('Please select an image and enter text to encode.');
-  //     return;
-  //   }
 
-  //   const encodedImageBuffer = await embedTextInImage(selectedImage, text, key);
-  //   const encodedImageBlob = new Blob([encodedImageBuffer]);
-  //   setEncodedImage(URL.createObjectURL(encodedImageBlob));
-  // };
 
-  // const handleDecode = async () => {
-  //   if (!selectedImage) {
-  //     alert('Please select an image to decode.');
-  //     return;
-  //   }
 
-  //   const decodedText = await extractTextFromImage(selectedImage, key);
-  //   setDecodedText(decodedText);
-  // };
+async function extractTextFromImage(imageFile, key) {
+  const image = await loadImage(imageFile);
+  const canvas = createCanvas(image.width, image.height);
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(image, 0, 0);
 
-      const embedText = async (event) => {
-        
-        if (!selectedImage || !text) return;
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
 
-        try {
-            const embeddedImageBuffer = await embedTextInImage(selectedImage, text, 'mySecretKey');
-            setEmbeddedImage(embeddedImageBuffer);
-        } catch (error) {
-            console.error('Error embedding text:', error);
-        }
+  // Extract encrypted text from image data
+  let encryptedText = "";
+  for (let i = 0; i < data.length; i++) {
+    if (data[i]!== 0) {
+      encryptedText += String.fromCharCode(data[i]);
+    } else {
+      break; // Assuming text ends with a null character
+    } 
+  }
+
+}
+
+ 
+ 
+
+const embedText = async () => {
+  if (!selectedImage || !text) return;
+
+  try {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const imageDataUrl = reader.result;
+      const embeddedImageDataURL = await embedTextInImage(imageDataUrl, text, 'mySecretKey');
+      setEmbeddedImage(embeddedImageDataURL); // Set the Data URL as the embedded image
     };
+    reader.readAsDataURL(selectedImage);
+  } catch (error) {
+    console.error('Error embedding text:', error);
+  }
+};
 
 
-    const extractText = async (event) => {
-      
-        if (!selectedImage) return;
 
-        try {
-            const extractedText = await extractTextFromImage(selectedImage, 'mySecretKey');
-            setDecryptedText(extractedText);
-        } catch (error) {
-            console.error('Error extracting text:', error);
-        }
-    };
 
+
+// const extractText = async () => {
+//     if (!selectedImage) return;
+
+//     try {
+//         const reader = new FileReader();
+//         reader.onload = async () => {
+//             const imageDataUrl = reader.result;
+//             console.log(imageDataUrl);
+//             const extractedText = await extractTextFromImage(imageDataUrl, 'mySecretKey');
+//             setDecryptedText(extractedText); 
+//             console.log(extractedText);
+//         };
+//         reader.readAsDataURL(selectedImage);
+//     } catch (error) {
+//         console.error('Error extracting text:', error);
+//     }
+// };
+
+//2 trail
+// const extractText = async () => {
+//   if (!selectedImage) return;
+
+//   try {
+//       const extractedText = await extractTextFromImage(selectedImage, 'mySecretKey');
+//       setDecryptedText(extractedText);
+//   } catch (error) {
+//       console.error('Error extracting text:', error);
+//   }
+// };
+
+const extractText = async () => {
+  if (!selectedImage) return;
+
+  try {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(selectedImage);
+      fileReader.onload = async () => {
+          const dataUrl = fileReader.result;
+          const extractedText = await extractTextFromImage(dataUrl, 'mySecretKey');
+          setDecryptedText(extractedText);
+          console.log(dataUrl);
+          console.log(extractedText);
+          console.log(decryptedText);
+      };
+  } catch (error) {
+      console.error('Error extracting text:', error);
+  }
+};
 
   return (
     <>
@@ -393,6 +451,7 @@ async function extractTextFromImage(imageFile, key) {
                 {logins.map((login, index) => (
                   <Item
                     key={index}
+                    
                     accountName={login.accountName}
                     password={login.password}
                     itemId={index}
@@ -414,12 +473,16 @@ async function extractTextFromImage(imageFile, key) {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-            
               <BsThreeDots />
             </button>
             <ul class="dropdown-menu">
               <li>
-                <div onClick={clearLogins} class="dropdown-item" style={{cursor:"pointer"}} href="#">
+                <div
+                  onClick={clearLogins}
+                  class="dropdown-item"
+                  style={{ cursor: "pointer" }}
+                  href="#"
+                >
                   Remove All Accounts
                 </div>
               </li>
@@ -466,7 +529,7 @@ async function extractTextFromImage(imageFile, key) {
                         Password
                       </label>
                       <input
-                        type={isPasswordVisible ? 'text' : 'password'}
+                        type={isPasswordVisible ? "text" : "password"}
                         className="form-control form-control-sm"
                         name="password"
                         id=""
@@ -510,101 +573,129 @@ async function extractTextFromImage(imageFile, key) {
                     </div>
 
                     <div class="mb-3">
-                        <label for="" class="form-label">
-                          Select a picture
-                        </label>
-                        <input
-                          type="file"
-                          class="form-control form-control-sm"
-                          name=""
-                          id=""
-                          accept="image/*"
-                          aria-describedby="helpId"
-                          placeholder=""
-                          onChange={handleImageChange}
-                        />
-                        <div className="d-flex gap-2 flex-column ">
-                      <input placeholder="type secret message" class="form-label" value={text} onChange={handleTextChange} />
-                      <input type="text" value={key} placeholder="enter key" onChange={handleKeyChange} />
-                      
-             <button className="btn btn-primary" onClick={() => embedText(selectedImage, text)}>Encode</button>
-            <button className="btn btn-primary" onClick={() => extractText(selectedImage)}>Decode</button>
-           {embeddedImage && <img src={URL.createObjectURL(new Blob([embeddedImage]))} alt="Embedded Image" />}
-            {decryptedText && <p>Decrypted Text: {decryptedText}</p>} 
-           
-           
-            </div>
-            
+                      <label for="" class="form-label">
+                        Select a picture locally
+                      </label>
+                      <input
+                        type="file"
+                        class="form-control form-control-sm"
+                        name=""
+                        id=""
+                        accept="image/*"
+                        aria-describedby="helpId"
+                        placeholder=""
+                        onChange={handleImageChange}
+                      />
+                      <div className="d-flex gap-2 flex-column ">
+                        {/* <input
+                          placeholder="type secret message"
+                          class="form-label"
+                          value={text}
+                          onChange={handleTextChange}
+                        /> */}
+
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={embedText}
+                        >
+                          Encode
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={extractText}
+                        >
+                          Decode
+                        </button>
+
+
+
+                        {embeddedImage && (
+                          <img
+                            // src={URL.createObjectURL(new Blob([embeddedImage]))}
+                            alt="Embedded Image"
+                            src={embeddedImage}
+                          />
+                        )}
+                       
+                       
+                        {decryptedText && (
+                          <p>Decrypted Text: {decryptedText}</p>
+                        )}
                       </div>
+                    </div>
 
-                      <p>or search for a picture online</p>
+                    <p>or search for a picture online</p>
                     {errorMsg && <p className="text-danger my-3">{errorMsg}</p>}
-               <div class="mb-3 d-flex gap-2">
-                
-                <input
-                  type="text"
-                  class="form-control"
-                  name=""
-                  id=""
-                  aria-describedby="helpId"
-                  placeholder="Type something to search..."
-                  ref = {searchInput}
-                />
-                
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  onClick={handleSearch}
-                >
-                Search
-                </button>
-                
-                
-               </div>
+                    <div class="mb-3 d-flex gap-2">
+                      <input
+                        type="text"
+                        class="form-control"
+                        name=""
+                        id=""
+                        aria-describedby="helpId"
+                        placeholder="Type something to search..."
+                        ref={searchInput}
+                      />
 
-               <div className="d-flex flex-column">
-               <div className="images container my-4">
-                <div className="row gx-3 gy-3">
-                  {
-                    images.map((image) =>{
-                      return (
-                        <div className="col-3 rounded-2" style={{cursor:"pointer"}}>
-                        <img 
-                        key={image.id}
-                        src={image.urls.small} 
-                        alt={image.alt_description} 
-                        className="image"
-                        onClick={() => setSelectedImage(image)}
-                        />
+                      <button
+                        type="button"
+                        class="btn btn-primary"
+                        onClick={handleSearch}
+                      >
+                        Search
+                      </button>
+                    </div>
+
+                    <div className="d-flex flex-column">
+                      <div className="images container my-4">
+                         <div className="row gx-3 gy-3">
+                         {images.map((image) => {
+                            return (
+                              <div
+                                className="col-3 rounded-2"
+                                style={{ cursor: "pointer" }}
+                              >
+                                <img
+                                  key={image.id}
+                                  src={image.urls.small}
+                                  alt={image.alt_description}
+                                  className="image"
+                                  onClick={() => setSelectedImage(image)}
+                                />
+                              </div>
+                            );
+                          })}
                         </div>
-                      )
-                    })
-                  }</div>
-               </div>
-               <div className="buttons align-self-center d-flex gap-3">
-              {page>1 &&  <button
-                  type="button"
-                  class="btn btn-primary"
-                  onClick={() => setPage(page -1 )}
-                >
-                  Previous
-                </button>}
-                {page<totalPages && <button
-                  type="button"
-                  class="btn btn-primary"
-                  onClick={() => setPage(page + 1 )}
-                >
-                  Next
-                </button>}
-                
-           
-                
-               </div>
-               {selectedImage && <img src={getSelectedImageUrl(selectedImage)} alt="Selected Image" />}
-               </div>
-               
-                    
-                    
+                      </div>
+                      <div className="buttons align-self-center d-flex gap-3">
+                        {page > 1 && (
+                          <button
+                            type="button"
+                            class="btn btn-primary"
+                            onClick={() => setPage(page - 1)}
+                          >
+                            Previous
+                          </button>
+                        )}
+                        {page < totalPages && (
+                          <button
+                            type="button"
+                            class="btn btn-primary"
+                            onClick={() => setPage(page + 1)}
+                          >
+                            Next
+                          </button>
+                        )}
+                      </div>
+                      {selectedImage && (
+                        <img
+                          src={getSelectedImageUrl(selectedImage)}
+                          alt="Selected Image"
+                        />
+                      )}
+                    </div>
 
                     <div className="d-flex justify-content-end align-items-center ">
                       <button
@@ -665,12 +756,12 @@ async function extractTextFromImage(imageFile, key) {
                         />
                       </div>
 
-                      <div class="mb-3">
-                        <label for="" class="form-label">
+                      <div class="mb-3 d-flex gap-1">
+                        <label for="" class="form-label d-block">
                           Password
                         </label>
                         <input
-                          type="password"
+                          type={isEditPasswordVisible ? 'text' : 'password'}
                           class="form-control form-control-sm"
                           name=""
                           id=""
@@ -679,6 +770,13 @@ async function extractTextFromImage(imageFile, key) {
                           aria-describedby="helpId"
                           placeholder=""
                         />
+                        <span className="password-toggle align-self-center" onClick={toggleEditPasswordVisibility}>
+        {isEditPasswordVisible ? (
+          <FaEye/>
+        ) : (
+          <FaEyeSlash/>
+        )}
+      </span>
                       </div>
                       <div className="d-flex mb-3 justify-content-end align-items-end flex-column">
                         <button
@@ -692,8 +790,6 @@ async function extractTextFromImage(imageFile, key) {
                         </button>
                         <p className="align-self-start">{password}</p>
                       </div>
-
-                   
 
                       <div className="d-flex gap-4">
                         <div
@@ -735,11 +831,12 @@ async function extractTextFromImage(imageFile, key) {
                         </div>
                       </div>
 
-                      <div className="d-flex flex-column gap-5 ps-5">
+                      {/* <div className="d-flex flex-column gap-5 ps-5">
                         <div className="d-flex justify-content-between ">
                           <span className="d-flex gap-2  flex-column ">
                             <h5 className="sf-grey">Account Name</h5>
                             <h5>{activeItem}</h5>
+                   
                           </span>
                         </div>
 
@@ -749,7 +846,11 @@ async function extractTextFromImage(imageFile, key) {
                             <h5>Chicago241@@$$</h5>
                           </span>
                         </div>
-                      </div>
+                      </div> */}
+
+{newLogin && <NewLoginDetails newLogin={newLogin} />}
+
+                      
                     </>
                   )}
                 </div>
@@ -760,6 +861,6 @@ async function extractTextFromImage(imageFile, key) {
       </div>
     </>
   );
-                  };
+}
 
 export default Main;
