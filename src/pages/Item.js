@@ -1,8 +1,10 @@
-import React from 'react';
+import React,{useEffect,useState} from 'react';
 import { Link } from 'react-router-dom'; 
 import { PiGlobeSimple } from "react-icons/pi";
 
 function Item({ accountName,itemId,onClick}) {
+ 
+  
   return (
   <>
    

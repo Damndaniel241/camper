@@ -60,17 +60,37 @@ function Main() {
   // const [key, setKey] = useState('');
   const [newLogin, setNewLogin] = useState(null);
   const [selectedLogin, setSelectedLogin] = useState(null);
-  
+  const [searchQuery, setSearchQuery] = useState('');
   const [embeddedImageDataURL, setEmbeddedImageDataURL] = useState('');
+  // const loginKey = `login-${accountName}`;
 
-  const handleItemClick = (login) => {
-    setActiveItem(login);
+
+  const handleItemClick = () => {
+    setActiveItem(accountName);
     // setSelectedLogin(login);
     if (editContainerRef.current) {
       editContainerRef.current.scrollIntoView({ behavior: "smooth" });
     }
     setEditMode(false);
   };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  // const handleNewLogin = (itemId) => {
+  //   // const updatedLogins = [...logins, newLogin];
+  //   // localStorage.setItem('logins', JSON.stringify(updatedLogins));
+  //   console.log(`Item clicked: ${itemId}`);
+  //   if (editContainerRef.current) {
+  //     editContainerRef.current.scrollIntoView({ behavior: "smooth" });
+  //   }
+  //   setEditMode(false);
+  // };
+
+
+  const filteredLogins = logins.filter((login) =>
+  login.accountName.toLowerCase().includes(searchQuery.toLowerCase())
+);
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isEditPasswordVisible, setIsEditPasswordVisible] = useState(false);
@@ -111,6 +131,8 @@ function Main() {
     setLogins([...logins, newLogin]);
 
     setNewLogin(newLogin);
+    
+    // localStorage.setItem(loginKey, JSON.stringify(newLogin));
 
     console.log(logins);
   };
@@ -120,6 +142,15 @@ function Main() {
     setSelectedLogin(login);
   };
 
+  // useEffect(() => {
+  //  const storedNewLogin = localStorage.getItem(loginKey);
+  //    const newLogin = storedNewLogin ? JSON.parse(storedNewLogin) : null;
+
+  //   if (newLogin) {
+  //     setNewLogin(newLogin);
+  //   }
+  // }, []);
+  
   const removeActiveItem = () => {
     if (activeItem) {
       const updatedLogins = logins.filter(
@@ -288,21 +319,7 @@ function Main() {
     setText(event.target.value);
   };
 
-// 2
-//   async function embedTextInImage(imageFile, text, key) {
-//     const image = await loadImage(imageFile);
-//     const canvas = createCanvas(image.width, image.height);
-//     const ctx = canvas.getContext('2d');
-//     ctx.drawImage(image, 0, 0);
 
-//     const embeddedImageDataURL = await encrypt(text, canvas.toDataURL(), key);
-
-//     // Convert data URL to buffer
-//     const embeddedImageBuffer = Buffer.from(embeddedImageDataURL.split(',')[1], 'base64');
-
-//     return embeddedImageBuffer;
-// }
-  
 
 
 
@@ -418,8 +435,9 @@ const extractText = async () => {
                   id=""
                   aria-describedby="helpId"
                   placeholder="Search Accounts"
-                  // onChange={(e) => setPassword(e.target.value)}
-                  // value={accountName}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                
                 />
               </div>
               <div
@@ -439,7 +457,7 @@ const extractText = async () => {
           <div id="list-2" className="list-2 ">
             {/* {showItem && ( */}
 
-            {logins.length === 0 ? (
+            {filteredLogins.length === 0 ? (
               <div>
                 <p>
                   No logins found. When you save a password in Camper, it will
@@ -448,14 +466,15 @@ const extractText = async () => {
               </div>
             ) : (
               <>
-                {logins.map((login, index) => (
+                {filteredLogins.map((login, index) => (
                   <Item
                     key={index}
                     
                     accountName={login.accountName}
                     password={login.password}
-                    itemId={index}
-                    onClick={() => handleItemClick(login.accountName)}
+                    // itemId={index}
+                    onClick={handleItemClick}
+                    // onClick={() => handleItemClick(login.accountName)}
                   />
                 ))}
               </>
@@ -569,7 +588,7 @@ const extractText = async () => {
                       >
                         Generate Password
                       </button>
-                      <p className="align-self-start">{password}</p>
+                     
                     </div>
 
                     <div class="mb-3">
@@ -594,9 +613,11 @@ const extractText = async () => {
 
                         {embeddedImage && (
                           <img
+                         
                             // src={URL.createObjectURL(new Blob([embeddedImage]))}
                             alt="Embedded Image"
                             src={embeddedImage}
+                           
                           />
                         )}
                        
@@ -670,10 +691,15 @@ const extractText = async () => {
                           </button>
                         )}
                       </div>
+                      
                       {selectedImage && (
+                        
                         <img
                           src={getSelectedImageUrl(selectedImage)}
                           alt="Selected Image"
+                          height="400rem"
+                          width="400rem"
+                          className="my-5 align-self-center "
                         />
                       )}
                     </div>
