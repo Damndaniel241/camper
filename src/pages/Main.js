@@ -22,7 +22,7 @@ import {
 } from "react-router-dom";
 import Item from "./Item";
 
-import NewLoginDetails from './NewLoginDetails';
+import RepositoryDetails from './RepositoryDetails';
 
 const API_URL = "https://api.unsplash.com/search/photos";
 
@@ -54,6 +54,7 @@ function Main() {
   const { xorWith } = require("lodash"); // For simple encryption, you can use a library like lodash
 
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState('');
   const [text, setText] = useState("");
   const [embeddedImage, setEmbeddedImage] = useState(null);
   const [decryptedText, setDecryptedText] = useState("");
@@ -62,25 +63,16 @@ function Main() {
   const [selectedLogin, setSelectedLogin] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [embeddedImageDataURL, setEmbeddedImageDataURL] = useState('');
-  // const loginKey = `login-${accountName}`;
+  const userID = localStorage.getItem('user_id');
 
+   const [selectedOnlineImageUrl, setSelectedOnlineImageUrl] = useState(''); // For online image URL
+   const [repositories, setRepositories] = useState([]);
 
-  const handleItemClick = () => {
-    setActiveItem(accountName);
-    // setSelectedLogin(login);
-    if (editContainerRef.current) {
-      editContainerRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-    setEditMode(false);
-  };
+   const [filteredLogins, setFilteredLogins] = useState([]);
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-  // const handleNewLogin = (itemId) => {
-  //   // const updatedLogins = [...logins, newLogin];
-  //   // localStorage.setItem('logins', JSON.stringify(updatedLogins));
-  //   console.log(`Item clicked: ${itemId}`);
+  // const handleItemClick = () => {
+  //   setActiveItem(accountName);
+    
   //   if (editContainerRef.current) {
   //     editContainerRef.current.scrollIntoView({ behavior: "smooth" });
   //   }
@@ -88,9 +80,23 @@ function Main() {
   // };
 
 
-  const filteredLogins = logins.filter((login) =>
-  login.accountName.toLowerCase().includes(searchQuery.toLowerCase())
-);
+  const handleItemClick = (itemId) => {
+    setActiveItem(itemId);
+    if (editContainerRef.current) {
+        editContainerRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+    setEditMode(false);
+};
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+  
+
+
+//   const filteredLogins = logins.filter((login) =>
+//   login.accountName.toLowerCase().includes(searchQuery.toLowerCase())
+// );
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isEditPasswordVisible, setIsEditPasswordVisible] = useState(false);
@@ -114,27 +120,106 @@ function Main() {
     }
   };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    setShowForm(false);
-    // setShowItem(true);
-    setShowEdit(true);
-    setShowNewEdit(false);
 
-    const newLogin = {
-      id: logins.length + 1, // You may need an id for each login item
-      accountName: accountName,
-      password: password,
-      selectedImage: selectedImage,
+
+  useEffect(() => {
+    const fetchRepositories = async () => {
+        try {
+            const response = await axios.get('http://127.0.0.1:8000/api/repositories/', {
+                headers: {
+                    'Authorization': `Token ${localStorage.getItem('token')}`
+                }
+            });
+            setRepositories(response.data);
+        } catch (error) {
+            console.error('Error fetching repositories:', error);
+        }
     };
 
-    setLogins([...logins, newLogin]);
+    fetchRepositories();
+}, []);
 
-    setNewLogin(newLogin);
+
+useEffect(() => {
+  // Filter the repositories for the logged-in user
+  const filtered = repositories.filter(repo => repo.user === parseInt(userID, 10));
+  setFilteredLogins(filtered);
+}, [repositories, userID]);
+
+
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+
+
+    const formData = new FormData();
+    formData.append('account_name', accountName);
+    formData.append('password', password);
+    // const username = localStorage.getItem('username');
+     const userId = localStorage.getItem('user_id'); 
+    formData.append('user', userId);
+
+
+   
+
+        if (selectedImage instanceof File) {
+            formData.append('picture', selectedImage);
+        // } else if (selectedImageUrl) {
+        //     formData.append('picture_url', selectedImageUrl);
+        }else {
+      
+        alert('Please select a picture.');
+        return;
+    }
+
+
+
+    try {
+        // Send data to backend endpoint
+        const response = await axios.post('http://127.0.0.1:8000/api/repositories/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization':`Token ${localStorage.getItem('token')}`
+            },
+                    
+        });
+
+        // Handle success response
+        console.log('Response:', response.data);
+        alert('Data saved successfully.');
+
+        const newRepository = response.data;
+
+        // Update the filteredLogins state directly
+        setFilteredLogins(prevFilteredLogins => [...prevFilteredLogins, newRepository]);
+        setShowForm(false);
     
-    // localStorage.setItem(loginKey, JSON.stringify(newLogin));
+        setShowEdit(true);
+        setShowNewEdit(false);
+    
+    } catch (error) {
+        // Handle error response
+        console.error('Error:', error);
+        alert('An error occurred while saving data.');
+    }
 
-    console.log(logins);
+
+
+
+    // const newLogin = {
+    //   id: logins.length + 1, 
+    //   accountName: accountName,
+    //   password: password,
+    //   selectedImage: selectedImage,
+    // };
+
+    // setLogins([...logins, newLogin]);
+
+    // setNewLogin(newLogin);
+    
+    
+
+    // console.log(logins);
   };
 
 
@@ -277,147 +362,83 @@ function Main() {
   }, [selectedImage]);
 
   // Function to encrypt text
-  function encrypt(text, key) {
-    // Simple XOR encryption
-    return xorWith(text, key, (a, b) => a.charCodeAt(0) ^ b.charCodeAt(0));
-  }
-
-  // Function to decrypt text
-  function decrypt(encryptedText, key) {
-    // Simple XOR decryption
-    return xorWith(encryptedText, key, (a, b) =>
-      String.fromCharCode(a ^ b.charCodeAt(0))
-    ).join("");
-  }
-
-  ///Function to embed encrypted text into image 
-  async function embedTextInImage(imageFile, text, key) {
-    const image = await loadImage(imageFile);
-    const canvas = createCanvas(image.width, image.height);
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(image, 0, 0);
-
-    const encryptedText = encrypt(text, key);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-
-    // Embed encrypted text into image data
-    for (let i = 0; i < encryptedText.length; i++) {
-      data[i] = encryptedText.charCodeAt(i);
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-    return canvas.toDataURL();
-  }
-
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-    setSelectedImage(file);
-  };
-
-  const handleTextChange = (event) => {
-    setText(event.target.value);
-  };
-
-
-
-
-
-
-
-
-async function extractTextFromImage(imageFile, key) {
-  const image = await loadImage(imageFile);
-  const canvas = createCanvas(image.width, image.height);
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(image, 0, 0);
-
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imageData.data;
-
-  // Extract encrypted text from image data
-  let encryptedText = "";
-  for (let i = 0; i < data.length; i++) {
-    if (data[i]!== 0) {
-      encryptedText += String.fromCharCode(data[i]);
-    } else {
-      break; // Assuming text ends with a null character
-    } 
-  }
-
-}
-
  
  
 
-const embedText = async () => {
-  if (!selectedImage || !text) return;
+  // const handleImageChange = (event) => {
+  //   const file = event.target.files[0];
+  //   setSelectedImage(file);
+  // };
 
-  try {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const imageDataUrl = reader.result;
-      const embeddedImageDataURL = await embedTextInImage(imageDataUrl, text, 'mySecretKey');
-      setEmbeddedImage(embeddedImageDataURL); // Set the Data URL as the embedded image
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    localStorage.removeItem('user_id');
+    alert("sucessfully logged out");
+    navigate('/');
+};
+
+
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        setSelectedImage(file);
+        setSelectedImageUrl('');
     };
-    reader.readAsDataURL(selectedImage);
-  } catch (error) {
-    console.error('Error embedding text:', error);
-  }
+
+  //   const handleImageUrlChange = (url) => {
+  //     setSelectedImageUrl(url);
+  //     setSelectedImage(null); 
+  //     // setSelectedImage(image)
+
+  //     // Clear the file selection since we're using a URL now
+  // };
+
+  const handleImageUrlChange = async (url) => {
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const file = new File([blob], "downloaded_image.jpg", { type: blob.type });
+        setSelectedImage(file); // Set the downloaded image as a file
+        setSelectedImageUrl(''); // Clear the URL as we now have the file
+    } catch (error) {
+        console.error('Error downloading the image:', error);
+        alert('Failed to download the image.');
+    }
 };
 
 
 
 
+    // const handleImageUrlChange = (e) => {
+    //     setSelectedImageUrl(e.target.value);
+    //     setSelectedImage(null);
+    // };
 
-// const extractText = async () => {
-//     if (!selectedImage) return;
+  // const getSelectedImageUrl = (image) => {
+  //       if (image instanceof File) {
+  //           return URL.createObjectURL(image);
+  //       } else if (typeof image === 'string') {
+  //           return image;
+  //       } else {
+  //           return '';
+  //       }
+  //   };
 
-//     try {
-//         const reader = new FileReader();
-//         reader.onload = async () => {
-//             const imageDataUrl = reader.result;
-//             console.log(imageDataUrl);
-//             const extractedText = await extractTextFromImage(imageDataUrl, 'mySecretKey');
-//             setDecryptedText(extractedText); 
-//             console.log(extractedText);
-//         };
-//         reader.readAsDataURL(selectedImage);
-//     } catch (error) {
-//         console.error('Error extracting text:', error);
-//     }
-// };
+  //   useEffect(() => {
+  //       if (selectedImage instanceof File) {
+  //           const url = URL.createObjectURL(selectedImage);
+  //           return () => URL.revokeObjectURL(url);
+  //       }
+  //   }, [selectedImage]);
 
-//2 trail
-// const extractText = async () => {
-//   if (!selectedImage) return;
 
-//   try {
-//       const extractedText = await extractTextFromImage(selectedImage, 'mySecretKey');
-//       setDecryptedText(extractedText);
-//   } catch (error) {
-//       console.error('Error extracting text:', error);
-//   }
-// };
 
-const extractText = async () => {
-  if (!selectedImage) return;
 
-  try {
-      const fileReader = new FileReader();
-      fileReader.readAsDataURL(selectedImage);
-      fileReader.onload = async () => {
-          const dataUrl = fileReader.result;
-          const extractedText = await extractTextFromImage(dataUrl, 'mySecretKey');
-          setDecryptedText(extractedText);
-          console.log(dataUrl);
-          console.log(extractedText);
-          console.log(decryptedText);
-      };
-  } catch (error) {
-      console.error('Error extracting text:', error);
-  }
-};
+ 
+
 
   return (
     <>
@@ -455,9 +476,24 @@ const extractText = async () => {
           </div>
 
           <div id="list-2" className="list-2 ">
-            {/* {showItem && ( */}
+          {filteredLogins.length === 0 ? (
+                <div>
+                    <p>No logins found. When you save a password in Camper, it will show up here</p>
+                </div>
+            ) : (
+                <>
+                    {filteredLogins.map((login, index) => (
+                        <Item
+                            key={index}
+                            accountName={login.account_name}
+                        
+                            onClick={() => handleItemClick(login.account_name)}
+                        />
+                    ))}
+                </>
+            )}
 
-            {filteredLogins.length === 0 ? (
+            {/* {filteredLogins.length === 0 ? (
               <div>
                 <p>
                   No logins found. When you save a password in Camper, it will
@@ -478,9 +514,9 @@ const extractText = async () => {
                   />
                 ))}
               </>
-            )}
+            )} */}
 
-            {/* )} */}
+            
           </div>
         </div>
 
@@ -501,6 +537,7 @@ const extractText = async () => {
                   class="dropdown-item"
                   style={{ cursor: "pointer" }}
                   href="#"
+                  
                 >
                   Remove All Accounts
                 </div>
@@ -514,6 +551,17 @@ const extractText = async () => {
                 <a class="dropdown-item" href="#">
                   Preferences
                 </a>
+              </li>
+              <li>
+                <div
+                  onClick={logout}
+                  class="dropdown-item"
+                  style={{ cursor: "pointer" }}
+                  href="#"
+                  
+                >
+                  Logout
+                </div>
               </li>
             </ul>
           </div>
@@ -534,7 +582,7 @@ const extractText = async () => {
                       <input
                         type="text"
                         className="form-control form-control-sm "
-                        name="name"
+                        name="account_name"
                         value={accountName}
                         onChange={(e) => setAccountName(e.target.value)}
                         id=""
@@ -598,34 +646,15 @@ const extractText = async () => {
                       <input
                         type="file"
                         class="form-control form-control-sm"
-                        name=""
+                        // name="picture"
                         id=""
                         accept="image/*"
                         aria-describedby="helpId"
                         placeholder=""
                         onChange={handleImageChange}
                       />
-                      <div className="d-flex gap-2 flex-column ">
-                       
+                   
 
-                       
-
-
-                        {embeddedImage && (
-                          <img
-                         
-                            // src={URL.createObjectURL(new Blob([embeddedImage]))}
-                            alt="Embedded Image"
-                            src={embeddedImage}
-                           
-                          />
-                        )}
-                       
-                       
-                        {decryptedText && (
-                          <p>Decrypted Text: {decryptedText}</p>
-                        )}
-                      </div>
                     </div>
 
                     <p>or search for a picture online</p>
@@ -634,11 +663,13 @@ const extractText = async () => {
                       <input
                         type="text"
                         class="form-control"
-                        name=""
+                        // name="picture_url"
                         id=""
                         aria-describedby="helpId"
                         placeholder="Type something to search..."
                         ref={searchInput}
+                  onBlur={(e) => handleImageUrlChange(e.target.value)}
+                        //  onChange={handleImageUrlChange} 
                       />
 
                       <button
@@ -664,7 +695,8 @@ const extractText = async () => {
                                   src={image.urls.small}
                                   alt={image.alt_description}
                                   className="image"
-                                  onClick={() => setSelectedImage(image)}
+                                  // onClick={() => setSelectedImage(image)}
+                                   onClick={() => handleImageUrlChange(image.urls.small)}
                                 />
                               </div>
                             );
@@ -702,6 +734,17 @@ const extractText = async () => {
                           className="my-5 align-self-center "
                         />
                       )}
+
+
+                            {/* {selectedOnlineImageUrl && !selectedImage && (
+                    <img
+                        src={selectedOnlineImageUrl}
+                        alt="Selected Image"
+                        height="400rem"
+                        width="400rem"
+                        className="my-5 align-self-center"
+                    />
+                )} */}
                     </div>
 
                     <div className="d-flex justify-content-end align-items-center ">
@@ -728,7 +771,7 @@ const extractText = async () => {
               {activeItem && (
                 <div
                   id="edit-container"
-                  // className="d-flex justify-content-evenly p-5"
+          
                   ref={editContainerRef}
                 >
                   {editMode ? (
@@ -838,25 +881,10 @@ const extractText = async () => {
                         </div>
                       </div>
 
-                      {/* <div className="d-flex flex-column gap-5 ps-5">
-                        <div className="d-flex justify-content-between ">
-                          <span className="d-flex gap-2  flex-column ">
-                            <h5 className="sf-grey">Account Name</h5>
-                            <h5>{activeItem}</h5>
                    
-                          </span>
-                        </div>
 
-                        <div className="d-flex justify-content-between ">
-                          <span className="d-flex gap-2 flex-column ">
-                            <h5 clasName="sf-grey">Password</h5>
-                            <h5>Chicago241@@$$</h5>
-                          </span>
-                        </div>
-                      </div> */}
-
-{newLogin && <NewLoginDetails newLogin={newLogin} />}
-
+{/* {newLogin && <NewLoginDetails newLogin={newLogin} />} */}
+{activeItem && <RepositoryDetails itemId={activeItem} />}
                       
                     </>
                   )}

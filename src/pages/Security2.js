@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import {Link,useNavigate} from  "react-router-dom";
+import axios from 'axios';
 
 function Security2() {
  const navigate = useNavigate();
@@ -40,6 +41,12 @@ function Security2() {
     setAnswers({ ...answers, [event.target.name]: event.target.value });
   };
 
+  const securityQuestions = Object.keys(answers).map((questionKey, index) => ({
+    question: questions[questionKey],
+    answer: answers[questionKey],
+  }));
+
+
   const handleAnswerQuestions = () => {
     const isValid = validateForm();
 
@@ -48,12 +55,22 @@ function Security2() {
       return; // Prevent form submission if validation fails
     }
 
-    // Store answers logic here (assuming you have a backend or storage mechanism)
-    console.log("Submitted Answers:", answers);
-    alert("successfully submitted") ;// Replace with your storage logic
-    navigate("/passkey");
-
+    console.log(securityQuestions)
+    axios.post('http://127.0.0.1:8000/api/security-questions/', { security_questions: securityQuestions }, {
+      headers: {
+        'Authorization': `Token ${localStorage.getItem('token')}`
+      }
+    })
+    .then(response => {
+      console.log("Submitted Answers:", response.data);
+      alert("Successfully submitted");
+      navigate("/passkey");
+    })
+    .catch(error => {
+      console.error("There was an error submitting the answers!", error);
+    });
   };
+  
 
   return (
     <div className="container">

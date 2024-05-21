@@ -13,6 +13,7 @@ import NewEdit2 from './pages/NewEdit2';
 import Security from './pages/Security';
 import Security2 from './pages/Security2';
 import PassKey from './pages/PassKey';
+import Login2 from './pages/Login2';
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
     <Route path="/security" element={<Security/>}/>
     <Route path="/passkey" element={<PassKey/>}/>
     <Route path="/security2" element={<Security2/>}/>
+    <Route path="login2" element={<Login2/>}/>
     </Routes>
     </BrowserRouter>
   );
