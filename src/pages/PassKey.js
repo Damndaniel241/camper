@@ -47,7 +47,7 @@ const GeneratePasskeyPage = () => {
     doc.text("Your one-time passkey:", 10, 40);
     doc.text(passkey, 10, 50);
     doc.save("camper_passkey.pdf");
-    navigate("/main");
+    navigate("/imagekey");
   };
 
   return (

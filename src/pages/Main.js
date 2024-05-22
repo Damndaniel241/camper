@@ -487,7 +487,7 @@ useEffect(() => {
                             key={index}
                             accountName={login.account_name}
                         
-                            onClick={() => handleItemClick(login.account_name)}
+                            onClick={() => handleItemClick(index)}
                         />
                     ))}
                 </>
@@ -779,7 +779,7 @@ useEffect(() => {
                       <div className="d-flex mb-3 justify-content-between">
                         <h1 className="me-5 gap-2 d-flex">
                           <PiGlobeSimple />
-                          <span>{activeItem}</span>
+                          <span>Your Repository</span>
                         </h1>
 
                         <div
@@ -884,7 +884,7 @@ useEffect(() => {
                    
 
 {/* {newLogin && <NewLoginDetails newLogin={newLogin} />} */}
-{activeItem && <RepositoryDetails itemId={activeItem} />}
+{activeItem && <RepositoryDetails itemID={activeItem} />}
                       
                     </>
                   )}

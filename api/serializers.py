@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, SecurityQuestion, Passkey, Repository
+from .models import User, SecurityQuestion, Passkey, Repository, OneTimeImageKey
 from cryptography.fernet import Fernet
 from django.contrib.auth.hashers import make_password, check_password
 
@@ -82,18 +82,14 @@ class SecurityQuestionCreateSerializer(serializers.Serializer):
     
 
 class RepositorySerializer(serializers.ModelSerializer):
-    # picture_url = serializers.URLField(write_only=True, required=False)
+ 
     class Meta:
         model = Repository
-        # fields = ['id', 'user', 'account_name', 'password', 'picture', 'picture_url']
+       
         fields = ['id','user','account_name','password','picture']
 
-        # def create(self, validated_data):
-        #     picture_url = validated_data.pop('picture_url', None)
-        #     if picture_url:
-        #         response = requests.get(picture_url)
-        #         image_name = picture_url.split("/")[-1]
-        #         validated_data['picture'] = ContentFile(response.content, image_name)
-        #     return super().create(validated_data)
-
-
+   
+class OneTimeImageKeySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OneTimeImageKey
+        fields = ['id', 'user', 'image', 'created_at']

@@ -36,7 +36,15 @@ class Repository(models.Model):
     account_name = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
     picture = models.ImageField(upload_to='repository_pictures/',null=True, blank=True)
-    # picture_url = models.URLField(max_length=200, null=True, blank=True)
+  
 
     def __str__(self):
         return f"{self.user} created {self.account_name} account"
+
+
+
+
+class OneTimeImageKey(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='one_time_keys/')
+    created_at = models.DateTimeField(auto_now_add=True)

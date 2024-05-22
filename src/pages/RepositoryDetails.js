@@ -4,6 +4,7 @@ import axios from 'axios';
 const RepositoryDetails = ({ itemID }) => {
     const [repository, setRepository] = useState(null);
 
+
     useEffect(() => {
         const fetchRepositoryDetails = async () => {
             try {
@@ -13,6 +14,7 @@ const RepositoryDetails = ({ itemID }) => {
                     }
                 });
                 setRepository(response.data);
+                console.log(response.data)
             } catch (error) {
                 console.error('Error fetching repository details:', error);
             }
@@ -33,6 +35,7 @@ const RepositoryDetails = ({ itemID }) => {
             {repository.picture && (
                 <img
                     src={URL.createObjectURL(new Blob([repository.picture]))}
+                    // src={repository.picture}
                     alt="Repository"
                     height="400rem"
                     width="400rem"

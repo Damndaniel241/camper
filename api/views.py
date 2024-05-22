@@ -1,6 +1,6 @@
 from rest_framework import generics,serializers,viewsets
-from .models import User, SecurityQuestion, Passkey
-from .serializers import UserSerializer, SecurityQuestionSerializer, SecurityQuestionCreateSerializer, PasskeySerializer,RepositorySerializer
+from .models import User, SecurityQuestion, Passkey,OneTimeImageKey, Repository
+from .serializers import UserSerializer, SecurityQuestionSerializer, SecurityQuestionCreateSerializer, OneTimeImageKeySerializer, PasskeySerializer,RepositorySerializer
 # from django.contrib.auth.backends import ModelBackend
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -10,7 +10,9 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Repository
+
+from django.core.files.storage import default_storage
+import hashlib
 
   
 
@@ -76,3 +78,53 @@ class RepositoryViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+
+class OneTimeImageKeyViewSet(viewsets.ModelViewSet):
+    queryset = OneTimeImageKey.objects.all()
+    serializer_class = OneTimeImageKeySerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        image_file = request.FILES.get('image')
+        
+        if not image_file:
+            return Response({'error': 'Image file is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if user already has an image key
+        if OneTimeImageKey.objects.filter(user=user).exists():
+            return Response({'error': 'One-time image key already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save image and create hash
+        image_instance = OneTimeImageKey.objects.create(user=user, image=image_file)
+        image_instance.save()
+        
+        return Response({'success': 'Image key created successfully.'}, status=status.HTTP_201_CREATED)
+
+    def verify_image(self, request, *args, **kwargs):
+        user = request.user
+        image_file = request.FILES.get('image')
+
+        if not image_file:
+            return Response({'error': 'Image file is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            one_time_image_key = OneTimeImageKey.objects.get(user=user)
+        except OneTimeImageKey.DoesNotExist:
+            return Response({'error': 'No image key found for user.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Verify the image by comparing the hash
+        stored_image_path = one_time_image_key.image.path
+        with open(stored_image_path, 'rb') as f:
+            stored_image_data = f.read()
+            stored_image_hash = hashlib.sha256(stored_image_data).hexdigest()
+
+        uploaded_image_data = image_file.read()
+        uploaded_image_hash = hashlib.sha256(uploaded_image_data).hexdigest()
+
+        if stored_image_hash == uploaded_image_hash:
+            return Response({'success': 'Image verification successful.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Image verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
