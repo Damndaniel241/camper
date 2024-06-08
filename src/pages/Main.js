@@ -69,6 +69,8 @@ function Main() {
    const [repositories, setRepositories] = useState([]);
 
    const [filteredLogins, setFilteredLogins] = useState([]);
+   const [savedItems, setSavedItems] = useState([]);
+   const [selectedItemId, setSelectedItemId] = useState(null);
 
   // const handleItemClick = () => {
   //   setActiveItem(accountName);
@@ -80,13 +82,13 @@ function Main() {
   // };
 
 
-  const handleItemClick = (itemId) => {
-    setActiveItem(itemId);
-    if (editContainerRef.current) {
-        editContainerRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-    setEditMode(false);
-};
+//   const handleItemClick = (itemId) => {
+//     setActiveItem(itemId);
+//     if (editContainerRef.current) {
+//         editContainerRef.current.scrollIntoView({ behavior: "smooth" });
+//     }
+//     setEditMode(false);
+// };
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -122,29 +124,29 @@ function Main() {
 
 
 
-  useEffect(() => {
-    const fetchRepositories = async () => {
-        try {
-            const response = await axios.get('http://127.0.0.1:8000/api/repositories/', {
-                headers: {
-                    'Authorization': `Token ${localStorage.getItem('token')}`
-                }
-            });
-            setRepositories(response.data);
-        } catch (error) {
-            console.error('Error fetching repositories:', error);
-        }
-    };
+//   useEffect(() => {
+//     const fetchRepositories = async () => {
+//         try {
+//             const response = await axios.get('http://127.0.0.1:8000/api/repositories/', {
+//                 headers: {
+//                     'Authorization': `Token ${localStorage.getItem('token')}`
+//                 }
+//             });
+//             setRepositories(response.data);
+//         } catch (error) {
+//             console.error('Error fetching repositories:', error);
+//         }
+//     };
 
-    fetchRepositories();
-}, []);
+//     fetchRepositories();
+// }, []);
 
 
-useEffect(() => {
-  // Filter the repositories for the logged-in user
-  const filtered = repositories.filter(repo => repo.user === parseInt(userID, 10));
-  setFilteredLogins(filtered);
-}, [repositories, userID]);
+// useEffect(() => {
+//   // Filter the repositories for the logged-in user
+//   const filtered = repositories.filter(repo => repo.user === parseInt(userID, 10));
+//   setFilteredLogins(filtered);
+// }, [repositories, userID]);
 
 
 
@@ -191,7 +193,8 @@ useEffect(() => {
         const newRepository = response.data;
 
         // Update the filteredLogins state directly
-        setFilteredLogins(prevFilteredLogins => [...prevFilteredLogins, newRepository]);
+        // setFilteredLogins(prevFilteredLogins => [...prevFilteredLogins, newRepository]);
+        setSavedItems((prevSavedItems) => [...prevSavedItems, newRepository]);
         setShowForm(false);
     
         setShowEdit(true);
@@ -206,20 +209,7 @@ useEffect(() => {
 
 
 
-    // const newLogin = {
-    //   id: logins.length + 1, 
-    //   accountName: accountName,
-    //   password: password,
-    //   selectedImage: selectedImage,
-    // };
-
-    // setLogins([...logins, newLogin]);
-
-    // setNewLogin(newLogin);
     
-    
-
-    // console.log(logins);
   };
 
 
@@ -255,6 +245,7 @@ useEffect(() => {
     setSelectedImage(null);
     setImages([]);
     setTotalPages(null);
+    setSelectedItemId(null);
   };
 
   const generatePassword = () => {
@@ -290,6 +281,7 @@ useEffect(() => {
     try {
       if (searchInput.current.value) {
         setErrorMsg("");
+        
         const { data } = await axios.get(
           `${API_URL}?query=${searchInput.current.value}&page=${page}&per_page=${IMAGES_PER_PAGE}&client_id=${process.env.REACT_APP_API_KEY}`
         );
@@ -435,7 +427,9 @@ useEffect(() => {
   //   }, [selectedImage]);
 
 
-
+  const handleItemClick = (itemId) => {
+    setSelectedItemId(itemId);
+  };
 
  
 
@@ -476,7 +470,7 @@ useEffect(() => {
           </div>
 
           <div id="list-2" className="list-2 ">
-          {filteredLogins.length === 0 ? (
+          {/* {filteredLogins.length === 0 ? (
                 <div>
                     <p>No logins found. When you save a password in Camper, it will show up here</p>
                 </div>
@@ -491,30 +485,26 @@ useEffect(() => {
                         />
                     ))}
                 </>
-            )}
-
-            {/* {filteredLogins.length === 0 ? (
-              <div>
-                <p>
-                  No logins found. When you save a password in Camper, it will
-                  show up here
-                </p>
-              </div>
-            ) : (
-              <>
-                {filteredLogins.map((login, index) => (
-                  <Item
-                    key={index}
-                    
-                    accountName={login.accountName}
-                    password={login.password}
-                    // itemId={index}
-                    onClick={handleItemClick}
-                    // onClick={() => handleItemClick(login.accountName)}
-                  />
-                ))}
-              </>
             )} */}
+
+{savedItems.length === 0 ? (
+          <div>
+            <p>No logins found. When you save a password, it will show up here</p>
+          </div>
+        ) : (
+          <>
+            {savedItems.map((login, index) => (
+              <Item
+                key={index}
+                accountName={login.account_name}
+                // onClick={() => console.log(`Item ${index} clicked`)}
+                onClick={() => handleItemClick(login.id)}
+              />
+            ))}
+          </>
+        )}
+
+           
 
             
           </div>
@@ -736,15 +726,6 @@ useEffect(() => {
                       )}
 
 
-                            {/* {selectedOnlineImageUrl && !selectedImage && (
-                    <img
-                        src={selectedOnlineImageUrl}
-                        alt="Selected Image"
-                        height="400rem"
-                        width="400rem"
-                        className="my-5 align-self-center"
-                    />
-                )} */}
                     </div>
 
                     <div className="d-flex justify-content-end align-items-center ">
@@ -766,6 +747,8 @@ useEffect(() => {
             </div>
           )}
 
+
+          {/* VERY BIG CHANGE
           {showEdit && (
             <>
               {activeItem && (
@@ -883,7 +866,7 @@ useEffect(() => {
 
                    
 
-{/* {newLogin && <NewLoginDetails newLogin={newLogin} />} */}
+
 {activeItem && <RepositoryDetails itemID={activeItem} />}
                       
                     </>
@@ -891,7 +874,14 @@ useEffect(() => {
                 </div>
               )}
             </>
-          )}
+          )} */}
+
+{selectedItemId && (
+        <div id="Details">
+          <RepositoryDetails itemID={selectedItemId} />
+        </div>
+      )}
+
         </div>
       </div>
     </>

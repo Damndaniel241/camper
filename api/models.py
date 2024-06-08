@@ -25,10 +25,16 @@ class SecurityQuestion(models.Model):
     question = models.CharField(max_length=255)
     answer = models.CharField(max_length=255)
 
+    def __str__(self):
+        return f"{self.user}'s security questions"
+
 
 class Passkey(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     passkey = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.user}'s passkey"
 
 
 class Repository(models.Model):
@@ -48,3 +54,6 @@ class OneTimeImageKey(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='one_time_keys/')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user}'s imagekey"

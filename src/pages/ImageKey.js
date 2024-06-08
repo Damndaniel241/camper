@@ -24,7 +24,7 @@ const ImageKey = () => {
                 }
             });
             alert('Image key created successfully');
-            navigate('/')
+            navigate('/main')
 
         } catch (error) {
             console.error('Error uploading image:', error.response.data);
