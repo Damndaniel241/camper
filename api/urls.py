@@ -1,5 +1,6 @@
 from django.urls import path,include
-from .views import UserCreateView, SecurityQuestionCreateView, PassKeyCreateView, CustomAuthToken
+from .views import UserCreateView, SecurityQuestionCreateView, PassKeyCreateView,CustomAuthToken,UserDetailView,\
+VerifyPasskeyView,VerifySecurityQuestionsView,VerifyImageKeyView
 from rest_framework.authtoken.views import obtain_auth_token
 from rest_framework.routers import DefaultRouter
 from .views import RepositoryViewSet,OneTimeImageKeyViewSet
@@ -20,6 +21,10 @@ urlpatterns = [
     path('security-questions/', SecurityQuestionCreateView.as_view()),
      path('', include(router.urls)), 
      path('verify_image/', OneTimeImageKeyViewSet.as_view({'post': 'verify_image'})),
+     path('user/<int:pk>/', UserDetailView.as_view()),
+     path('verify_passkey/', VerifyPasskeyView.as_view()),
+      path('api/verify_security_questions/', VerifySecurityQuestionsView.as_view()),
+       path('api/verify_image_key/', VerifyImageKeyView.as_view()),
     
  
 ]

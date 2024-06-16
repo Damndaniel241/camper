@@ -90,9 +90,7 @@ function Main() {
 //     setEditMode(false);
 // };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
+ 
   
 
 
@@ -121,6 +119,25 @@ function Main() {
       setActiveItem(activeItem);
     }
   };
+
+
+  useEffect(() => {
+    // Fetch the saved items from the API when the component mounts
+    const fetchSavedItems = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/repositories/', {
+          headers: {
+            'Authorization': `Token ${localStorage.getItem('token')}`
+          }
+        });
+        setSavedItems(response.data);
+      } catch (error) {
+        console.error('Error fetching saved items:', error);
+      }
+    };
+
+    fetchSavedItems();
+  }, []);
 
 
 
@@ -173,6 +190,7 @@ function Main() {
         alert('Please select a picture.');
         return;
     }
+
 
 
 
@@ -348,19 +366,20 @@ function Main() {
   useEffect(() => {
     if (selectedImage instanceof File) {
       const url = URL.createObjectURL(selectedImage);
-      // return () => URL.createObjectURL(selectedImage);
+     
       return () => URL.revokeObjectURL(url);
     }
   }, [selectedImage]);
 
-  // Function to encrypt text
- 
- 
 
-  // const handleImageChange = (event) => {
-  //   const file = event.target.files[0];
-  //   setSelectedImage(file);
-  // };
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const filteredItems = savedItems.filter(item =>
+    item.account_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
 
   const navigate = useNavigate();
 
@@ -380,13 +399,6 @@ function Main() {
         setSelectedImageUrl('');
     };
 
-  //   const handleImageUrlChange = (url) => {
-  //     setSelectedImageUrl(url);
-  //     setSelectedImage(null); 
-  //     // setSelectedImage(image)
-
-  //     // Clear the file selection since we're using a URL now
-  // };
 
   const handleImageUrlChange = async (url) => {
     try {
@@ -404,27 +416,6 @@ function Main() {
 
 
 
-    // const handleImageUrlChange = (e) => {
-    //     setSelectedImageUrl(e.target.value);
-    //     setSelectedImage(null);
-    // };
-
-  // const getSelectedImageUrl = (image) => {
-  //       if (image instanceof File) {
-  //           return URL.createObjectURL(image);
-  //       } else if (typeof image === 'string') {
-  //           return image;
-  //       } else {
-  //           return '';
-  //       }
-  //   };
-
-  //   useEffect(() => {
-  //       if (selectedImage instanceof File) {
-  //           const url = URL.createObjectURL(selectedImage);
-  //           return () => URL.revokeObjectURL(url);
-  //       }
-  //   }, [selectedImage]);
 
 
   const handleItemClick = (itemId) => {
@@ -470,30 +461,15 @@ function Main() {
           </div>
 
           <div id="list-2" className="list-2 ">
-          {/* {filteredLogins.length === 0 ? (
-                <div>
-                    <p>No logins found. When you save a password in Camper, it will show up here</p>
-                </div>
-            ) : (
-                <>
-                    {filteredLogins.map((login, index) => (
-                        <Item
-                            key={index}
-                            accountName={login.account_name}
-                        
-                            onClick={() => handleItemClick(index)}
-                        />
-                    ))}
-                </>
-            )} */}
+    
 
-{savedItems.length === 0 ? (
+{filteredItems.length === 0 ? (
           <div>
             <p>No logins found. When you save a password, it will show up here</p>
           </div>
         ) : (
           <>
-            {savedItems.map((login, index) => (
+            {filteredItems.map((login, index) => (
               <Item
                 key={index}
                 accountName={login.account_name}
@@ -533,7 +509,7 @@ function Main() {
                 </div>
               </li>
               <li>
-                <a class="dropdown-item" href="#">
+                <a className="dropdown-item" href="#">
                   Export Accounts
                 </a>
               </li>
@@ -715,15 +691,12 @@ function Main() {
                       </div>
                       
                       {selectedImage && (
-                        
-                        <img
-                          src={getSelectedImageUrl(selectedImage)}
-                          alt="Selected Image"
-                          height="400rem"
-                          width="400rem"
-                          className="my-5 align-self-center "
-                        />
-                      )}
+                         <img src={getSelectedImageUrl(selectedImage)} alt="Selected Image"
+                                      height="400rem"
+                                      width="400rem"
+                                      className="my-5 align-self-center "
+                                    />
+                                  )}
 
 
                     </div>
@@ -759,6 +732,7 @@ function Main() {
                 >
                   {editMode ? (
                     <div className="container">
+
                       <div className="d-flex mb-3 justify-content-between">
                         <h1 className="me-5 gap-2 d-flex">
                           <PiGlobeSimple />
@@ -804,12 +778,12 @@ function Main() {
                           placeholder=""
                         />
                         <span className="password-toggle align-self-center" onClick={toggleEditPasswordVisibility}>
-        {isEditPasswordVisible ? (
-          <FaEye/>
-        ) : (
-          <FaEyeSlash/>
-        )}
-      </span>
+                        {isEditPasswordVisible ? (
+                        <FaEye/>
+                        ) : (
+                        <FaEyeSlash/>
+                        )}
+                        </span>
                       </div>
                       <div className="d-flex mb-3 justify-content-end align-items-end flex-column">
                         <button
@@ -876,8 +850,12 @@ function Main() {
             </>
           )} */}
 
+
+
+
+
 {selectedItemId && (
-        <div id="Details">
+        <div id="details">
           <RepositoryDetails itemID={selectedItemId} />
         </div>
       )}

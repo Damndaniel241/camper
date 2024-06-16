@@ -30,6 +30,28 @@ class UserSerializer(serializers.ModelSerializer):
 #         fields = '__all__'
 
 
+#hashed
+# class PasskeySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Passkey
+#         fields = ['passkey']
+
+#     def create(self, validated_data):
+#         user = self.context['request'].user
+#         raw_passkey = validated_data['passkey']
+        
+#         # Hash the passkey
+#         hashed_passkey = make_password(raw_passkey)
+
+#         # Save the hashed passkey in the database
+#         passkey_instance, created = Passkey.objects.update_or_create(
+#             user=user,
+#             defaults={'passkey': hashed_passkey}
+#         )
+#         return passkey_instance
+
+
+#unhashed
 class PasskeySerializer(serializers.ModelSerializer):
     class Meta:
         model = Passkey
@@ -38,17 +60,13 @@ class PasskeySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context['request'].user
         raw_passkey = validated_data['passkey']
-        
-        # Hash the passkey
-        hashed_passkey = make_password(raw_passkey)
 
-        # Save the hashed passkey in the database
+        # Save the passkey in the database as plain text
         passkey_instance, created = Passkey.objects.update_or_create(
             user=user,
-            defaults={'passkey': hashed_passkey}
+            defaults={'passkey': raw_passkey}
         )
         return passkey_instance
-
 
 
 class SecurityQuestionSerializer(serializers.ModelSerializer):
@@ -93,3 +111,14 @@ class OneTimeImageKeySerializer(serializers.ModelSerializer):
     class Meta:
         model = OneTimeImageKey
         fields = ['id', 'user', 'image', 'created_at']
+
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    security_questions = SecurityQuestionSerializer(many=True, read_only=True)
+    passkey = PasskeySerializer(read_only=True)
+    imagekey = OneTimeImageKeySerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'security_questions', 'passkey', 'imagekey']

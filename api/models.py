@@ -21,7 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 class SecurityQuestion(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='security_questions')
     question = models.CharField(max_length=255)
     answer = models.CharField(max_length=255)
 
@@ -30,7 +30,7 @@ class SecurityQuestion(models.Model):
 
 
 class Passkey(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='passkey')
     passkey = models.CharField(max_length=255)
 
     def __str__(self):
@@ -51,7 +51,7 @@ class Repository(models.Model):
 
 
 class OneTimeImageKey(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='imagekey')
     image = models.ImageField(upload_to='one_time_keys/')
     created_at = models.DateTimeField(auto_now_add=True)
 

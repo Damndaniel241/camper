@@ -15,6 +15,7 @@ import Security2 from './pages/Security2';
 import PassKey from './pages/PassKey';
 import Login2 from './pages/Login2';
 import ImageKey from './pages/ImageKey';
+import ImageComparisonComponent from './pages/ImageComparisonComponent';
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
     <Route path="/security2" element={<Security2/>}/>
     <Route path="/login2" element={<Login2/>}/>
     <Route path="/imagekey" element={<ImageKey/>}/>
+    <Route path="/comp" element={<ImageComparisonComponent/>}/>
     </Routes>
     </BrowserRouter>
   );
