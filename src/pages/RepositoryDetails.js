@@ -1,9 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef, useCallback } from 'react';
 import axios from 'axios';
-import { FaEye, FaEyeSlash  } from "react-icons/fa";
-;
+import { FaEye, FaEyeSlash,FaPencilAlt  } from "react-icons/fa";
+import { PiGlobeSimple } from "react-icons/pi";
+import { RiDeleteBin6Fill } from "react-icons/ri";
+import PasswordValidator from "react-password-validattor";
+import { useShowNewEdit } from '../components/ShowNewEditContext';
+import { IoIosWarning } from "react-icons/io";
 
-const RepositoryDetails = ({ itemID }) => {
+
+
+const API_URL = "https://api.unsplash.com/search/photos";
+
+const IMAGES_PER_PAGE = 20;
+
+
+
+const RepositoryDetails = ({ itemID}) => {
     const [repository, setRepository] = useState(null);
     const [selectedQuestions, setSelectedQuestions] = useState([]);
     const [userData, setUserData] = useState(null);
@@ -12,12 +24,66 @@ const RepositoryDetails = ({ itemID }) => {
     const [imageKey, setImageKey] = useState(null);
     const [message, setMessage] = useState('');
     const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+    const [password,setPassword]  = useState("");
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+
+    const [isEditPasswordVisible, setIsEditPasswordVisible] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImageUrl, setSelectedImageUrl] = useState('');
+    const [images, setImages] = useState([]);
+    const [totalPages, setTotalPages] = useState(0);
+    const [page, setPage] = useState(1);
+    const [accountName, setAccountName] = useState("");
+    
+    // const { setShowNewEdit } = useShowNewEdit();
+
+    // useEffect(() => {
+    //     setShowNewEdit(!showNewEdit);
+    //   }, [setShowNewEdit]);
+
+    // useEffect(() => {
+    //   setShowNewEdit(false);
+    // }, [setShowNewEdit]);
+    
+    const generatePassword = () => {
+        const length = Math.floor(Math.random() * (20 - 8 + 1)) + 8;
+        const specials = "!@#$%&*_?";
+        const numbers = "0123456789";
+        const lowerLetters = "abcdefghijklmnopqrstuvwxyz";
+        const upperLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const allChars = specials + numbers + lowerLetters + upperLetters;
+    
+        let newPassword = specials[Math.floor(Math.random() * specials.length)];
+        newPassword += numbers[Math.floor(Math.random() * numbers.length)];
+        newPassword +=
+          lowerLetters[Math.floor(Math.random() * lowerLetters.length)];
+        newPassword +=
+          upperLetters[Math.floor(Math.random() * upperLetters.length)];
+    
+        for (let i = 4; i < length; i++) {
+          newPassword += allChars[Math.floor(Math.random() * allChars.length)];
+        }
+    
+        newPassword = newPassword
+          .split("")
+          .sort(() => Math.random() - 0.5)
+          .join("");
+        console.log(newPassword);
+        setPassword(newPassword);
+      };
+
+
 
     const togglePasswordVisibility = () => {
       setIsPasswordVisible(!isPasswordVisible);
     };
+    
+    const toggleEditPasswordVisibility = () => {
+        setIsEditPasswordVisible(!isEditPasswordVisible);
+      };
     
         
 
@@ -42,6 +108,39 @@ const RepositoryDetails = ({ itemID }) => {
         fetchRepositoryDetails();
     }, [itemID]);
 
+
+    const handleEditSubmit = async (event) => {
+      event.preventDefault();
+      try {
+          const formData = new FormData();
+          formData.append('account_name', accountName);
+          formData.append('password', password);
+          formData.append('user', userId);
+          if (selectedImage  instanceof File) {
+              formData.append('picture', selectedImage);
+          }else {
+      
+            alert('Please select a picture.');
+            return;
+        }
+    
+
+          await axios.put(`http://127.0.0.1:8000/api/repositories/${itemID}/`, formData, {
+              headers: {
+                  'Content-Type': 'multipart/form-data',
+                  'Authorization':`Token ${localStorage.getItem('token')}`
+              }
+          });
+
+          alert('Repository updated successfully!');
+          setEditMode(false);
+          window.location.reload();
+          // Optionally, redirect or perform other actions after successful update
+      } catch (error) {
+          console.error('Error updating repository:', error);
+          alert('Failed to update repository. Please try again.');
+      }
+  };
 
   
        
@@ -154,6 +253,7 @@ const RepositoryDetails = ({ itemID }) => {
                 setTimeout(() => {
                     alert('Verification Successful');
                     alert(`Your password is: ${repository.password}`);
+                    window.location.reload();
                 }, 0);
             } else {
                 setMessage('Verification Unsuccessful');
@@ -173,15 +273,7 @@ const RepositoryDetails = ({ itemID }) => {
             
         };
       
-        // const handleImageChange = (e) => {
-        //     const file = e.target.files[0];
-        //     if (file) {
-        //         const imageUrl = URL.createObjectURL(file);
-        //         setImageKey(file);
-        //         setImagePreviewUrl(imageUrl);
-        //         console.log(imageUrl);
-        //     }
-        // }
+    
 
         const handleImageChange = (e) => {
             const file = e.target.files[0];
@@ -195,8 +287,123 @@ const RepositoryDetails = ({ itemID }) => {
             }
         };
 
+        const toggleEditMode = () => {
+            setEditMode(!editMode);
+         
+          };
         
-    
+
+
+
+          const searchInput = useRef(null);
+
+          const fetchImages = useCallback(async () => {
+            try {
+              if (searchInput.current.value) {
+                setErrorMsg("");
+                
+                const { data } = await axios.get(
+                  `${API_URL}?query=${searchInput.current.value}&page=${page}&per_page=${IMAGES_PER_PAGE}&client_id=${process.env.REACT_APP_API_KEY}`
+                );
+        
+                setImages(data.results);
+                setTotalPages(data.total_pages);
+              }
+            } catch (error) {
+              setErrorMsg("Error fetching images. Try again soon");
+              console.log(error);
+            }
+          }, [page]);
+        
+          useEffect(() => {
+            fetchImages();
+          }, [fetchImages]);
+        
+        
+        
+          const resetSearch = () => {
+            fetchImages();
+            setPage(1);
+          };
+        
+        
+          const handleSearch = (event) => {
+            event.preventDefault();
+            console.log(searchInput.current.value);
+            resetSearch();
+          };
+        
+        
+          const fileToBlob = (file) => {
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsArrayBuffer(file);
+            });
+          };
+        
+        
+          const convertFileToBlob = async (file) => {
+            const blob = await fileToBlob(file);
+            return new Blob([blob], { type: file.type });
+          };
+        
+      
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    convertFileToBlob(file).then((blob) => setSelectedImage(blob));
+  };
+
+  const getSelectedImageUrl = (image) => {
+    if (image instanceof File) {
+      return URL.createObjectURL(image);
+    } else if (typeof image === "object" && image.hasOwnProperty("urls")) {
+      return image.urls.small;
+    } else {
+      return "";
+    }
+  };
+
+  useEffect(() => {
+    if (selectedImage instanceof File) {
+      const url = URL.createObjectURL(selectedImage);
+     
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [selectedImage]);
+
+
+  const handleDelete = async () => {
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/repositories/${itemID}/`,{
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('token')}`
+      }});
+        alert('Repository deleted successfully!');
+        window.location.reload();
+        // Optionally, redirect or perform other actions after successful deletion
+    } catch (error) {
+        console.error('Error deleting repository:', error);
+        alert('Failed to delete repository. Please try again.');
+    }
+};
+
+
+const handleImageUrlChange = async (url) => {
+try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const file = new File([blob], "downloaded_image.jpg", { type: blob.type });
+    setSelectedImage(file); // Set the downloaded image as a file
+    setSelectedImageUrl(''); // Clear the URL as we now have the file
+} catch (error) {
+    console.error('Error downloading the image:', error);
+    alert('Failed to download the image.');
+}
+};
+
+
 
     if (!repository) {
         return <p>Loading...</p>;
@@ -205,6 +412,424 @@ const RepositoryDetails = ({ itemID }) => {
 
 
     return (
+        <>
+
+{editMode ? (<>
+        <div className="mx-5 d-flex mb-3 justify-content-between">
+            <div className="me-5 gap-2 d-flex align-items-center">
+                          <PiGlobeSimple />
+                          <span className='text-capitalize'>{repository.account_name}</span>
+                        </div>
+
+                        <div
+                          className="p-1 px-3 hover-grey rounded-1 d-flex align-items-center gap-1"
+                        
+                        >
+                          <RiDeleteBin6Fill />
+                          <span
+                          data-bs-toggle="modal"
+                              data-bs-target="#deleteId"
+                          >Remove</span>
+                        </div>
+
+                        <div
+                              class="modal fade"
+                              id="deleteId"
+                              tabindex="-1"
+                              data-bs-backdrop="static"
+                              data-bs-keyboard="false"
+                              
+                              role="dialog"
+                              aria-labelledby="modalTitleId"
+                              aria-hidden="true"
+                            >
+                              <div
+                                class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+                                role="document"
+                              >
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title" id="modalTitleId">
+                                      Delete Repository
+                                    </h5>
+                                    <button
+                                      type="button"
+                                      class="btn-close"
+                                      data-bs-dismiss="modal"
+                                      aria-label="Close"
+                                    ></button>
+                                  </div>
+                                  <div class="modal-body"><IoIosWarning />Warning: You are about to delete your repository. Are you sure you want to proceed?</div>
+                                  <div class="modal-footer">
+                                    <button
+                                      type="button"
+                                      class="btn btn-secondary"
+                                      data-bs-dismiss="modal"
+                                    >
+                                      No
+                                    </button>
+                                    <button type="button" onClick={handleDelete} class="btn btn-primary">yes</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                  
+                            <script>
+                              const myModal = new bootstrap.Modal(
+                                document.getElementById("deleteId"),
+                                options,
+                              );
+                            </script>
+
+                      </div>
+
+                      <div className='mx-4'>
+                        <form onSubmit={handleEditSubmit}>
+                      <div class="mb-3">
+                        <label for="" class="form-label">
+                          Account Name
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          name=""
+                          id=""
+                          onChange={(e) => setAccountName(e.target.value)}
+                          aria-describedby="helpId"
+                          placeholder=""
+                          // value={repository.accountName}
+                        />
+                      </div>
+
+                      <div class="mb-3  ">
+                        
+                        <label for="" class="form-label">
+                          Password
+                        </label>
+
+                        <div className="d-flex  ">
+                        <input
+                          type={isEditPasswordVisible ? 'text' : 'password'}
+                          class="form-control form-control-sm"
+                          name=""
+                          id=""
+                          onChange={() => setPassword({ password })}
+                          value={password}
+                          aria-describedby="helpId"
+                          placeholder=""
+                        />
+                        
+                        <span className="password-toggle  align-self-center " onClick={toggleEditPasswordVisibility}>
+                        {isEditPasswordVisible ? (
+                        <FaEye/>
+                        ) : (
+                        <FaEyeSlash/>
+                        )}
+                        </span>
+                        </div>
+
+
+                      </div>
+
+                      <PasswordValidator
+                        rules={[
+                          "minLength",
+                          "maxLength",
+                          "specialChar",
+                          "number",
+                          "capital",
+                          // 'matches',
+                          "lowercase",
+                          "notEmpty",
+                          "shouldNotContain",
+                        ]}
+                        forbiddenWords={["John", "Doe"]}
+                        minLength={8}
+                        maxLength={32}
+                        password={password}
+                        iconSize={16}
+                        // onValidatorChange={onValidatorChangeHandler}
+                        config={{ showProgressBar: true }}
+                      />
+
+
+                      <div className="d-flex my-3 justify-content-end align-items-end flex-column">
+                        <button
+                          className="btn btn-primary align-self-start"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            generatePassword();
+                          }}
+                        >
+                          Generate Password
+                        </button>
+                        {/* <p className="align-self-start">{password}</p> */}
+                      </div>
+
+                      <div class="mb-3">
+                      <label for="" class="form-label">
+                        Select a picture locally
+                      </label>
+                      <input
+                        type="file"
+                        class="form-control form-control-sm"
+                        // name="picture"
+                        id=""
+                        accept="image/*"
+                        aria-describedby="helpId"
+                        placeholder=""
+                        onChange={handleImageChange}
+                      />
+                   
+
+                    </div>
+
+                    <p className='mb-2'>or search for a picture online</p>
+                    {/* {errorMsg && <p className="text-danger my-3">{errorMsg}</p>} */}
+                    <div class="mb-3 d-flex gap-2">
+                      <input
+                        type="text"
+                        class="form-control"
+                        // name="picture_url"
+                        id=""
+                        aria-describedby="helpId"
+                        placeholder="Type something to search..."
+                        ref={searchInput}
+                  onBlur={(e) => handleImageUrlChange(e.target.value)}
+                        //  onChange={handleImageUrlChange} 
+                      />
+
+                      <button
+                        type="button"
+                        class="btn btn-primary"
+                        onClick={handleSearch}
+                      >
+                        Search
+                      </button>
+                    </div>
+
+                    <div className="d-flex flex-column">
+                      <div className="images container my-4">
+                         <div className="row gx-3 gy-3">
+                         {images.map((image) => {
+                            return (
+                              <div
+                                className="col-3 rounded-2"
+                                style={{ cursor: "pointer" }}
+                              >
+                                <img
+                                  key={image.id}
+                                  src={image.urls.small}
+                                  alt={image.alt_description}
+                                  className="image"
+                                  // onClick={() => setSelectedImage(image)}
+                                   onClick={() => handleImageUrlChange(image.urls.small)}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="buttons align-self-center d-flex gap-3">
+                        {page > 1 && (
+                          <button
+                            type="button"
+                            class="btn btn-primary"
+                            onClick={() => setPage(page - 1)}
+                          >
+                            Previous
+                          </button>
+                        )}
+                        {page < totalPages && (
+                          <button
+                            type="button"
+                            class="btn btn-primary"
+                            onClick={() => setPage(page + 1)}
+                          >
+                            Next
+                          </button>
+                        )}
+                      </div>
+                      
+                      {selectedImage && (
+                         <img src={getSelectedImageUrl(selectedImage)} alt="loading images..."
+                                      height="400rem"
+                                      width="400rem"
+                                      className="my-5 align-self-center "
+                                    />
+                                  )}
+
+
+                    </div>
+
+
+
+                      <div className="d-flex justify-content-end gap-4 mb-3">
+                        <div
+                          className="p-1 px-3 bg-grey text-black btn rounded-1 d-flex align-items-center gap-1"
+                          onClick={() => setEditMode(false)}
+                        >
+                          <span>Cancel</span>
+                        </div>
+                   
+                          {/* <button type="submit" className="btn btn-primary">
+                            Save Changes
+                          </button> */}
+
+                       
+                          <button
+                            type="button"
+                            class="btn btn-primary btn-lg"
+                            data-bs-toggle="modal"
+                            data-bs-target="#updateId"
+                          >
+                            Save Changes
+                          </button>
+                          
+                        
+                          <div
+                            class="modal fade"
+                            id="updateId"
+                            tabindex="-1"
+                            data-bs-backdrop="static"
+                            data-bs-keyboard="false"
+                            
+                            role="dialog"
+                            aria-labelledby="modalTitleId"
+                            aria-hidden="true"
+                          >
+                            <div
+                              class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+                              role="document"
+                            >
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h5 class="modal-title" id="modalTitleId">
+                                    Update your repository
+                                  </h5>
+                                  <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                  ></button>
+                                </div>
+                                <div class="modal-body">Are you sure you want to make changes?</div>
+                                <div class="modal-footer">
+                                  <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal"
+                                  >
+                                    No
+                                  </button>
+                                  <button type="submit" class="btn btn-primary">Yes</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                         
+                          <script>
+                            const myModal = new bootstrap.Modal(
+                              document.getElementById("updateId"),
+                              options,
+                            );
+                          </script>
+                          
+                      </div>
+                      </form>
+                      </div>
+                    </>
+
+                        ):(<>
+                         <div className="d-flex justify-content-evenly p-5">
+                        <div className="me-5 gap-2 d-flex align-items-center">
+                          <PiGlobeSimple />
+                          <span>{repository.account_name}</span>
+                        </div>
+
+                        <div className="d-flex align-items-center  gap-4">
+                          <div
+                            className="p-1 px-3 hover-grey rounded-1 d-flex align-items-center gap-1"
+                            onClick={toggleEditMode}
+                          >
+                            <FaPencilAlt /> <span>Edit</span>
+                          </div>
+                          <div
+                            className="p-1 px-3 hover-grey rounded-1 d-flex align-items-center gap-1"
+                            // onClick={removeActiveItem}
+                          >
+                            <RiDeleteBin6Fill />
+                            <span
+                            data-bs-toggle="modal"
+                              data-bs-target="#deleteId"
+                            >Remove</span>
+                       
+                          
+                
+                            <div
+                              class="modal fade"
+                              id="deleteId"
+                              tabindex="-1"
+                              data-bs-backdrop="static"
+                              data-bs-keyboard="false"
+                              
+                              role="dialog"
+                              aria-labelledby="modalTitleId"
+                              aria-hidden="true"
+                            >
+                              <div
+                                class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+                                role="document"
+                              >
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title" id="modalTitleId">
+                                      Delete Repository
+                                    </h5>
+                                    <button
+                                      type="button"
+                                      class="btn-close"
+                                      data-bs-dismiss="modal"
+                                      aria-label="Close"
+                                    ></button>
+                                  </div>
+                                  <div class="modal-body"><IoIosWarning />Warning: You are about to delete your repository. Are you sure you want to proceed?</div>
+                                  <div class="modal-footer">
+                                    <button
+                                      type="button"
+                                      class="btn btn-secondary"
+                                      data-bs-dismiss="modal"
+                                    >
+                                      No
+                                    </button>
+                                    <button type="button" onClick={handleDelete} class="btn btn-primary">yes</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                  
+                            <script>
+                              const myModal = new bootstrap.Modal(
+                                document.getElementById("deleteId"),
+                                options,
+                              );
+                            </script>
+                            
+                          </div>
+                        </div>
+                      </div>
+
+
+
+
+
+
+
+
+
+
         <div className='ms-5'>
             {/* <h2>Repository Details</h2> */}
             <div className='d-flex flex-column'>
@@ -226,14 +851,9 @@ const RepositoryDetails = ({ itemID }) => {
             )}
              </div>
              </div>
-{/* 
-            <button
-                type="button"
-                class="btn btn-primary mb-3"
-                // onclick={fetchUserData}
-            >
-                get details
-            </button> */}
+
+
+
             
 
 
@@ -260,16 +880,18 @@ const RepositoryDetails = ({ itemID }) => {
         role="document"
     >
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header d-flex justify-content-between">
                 <h5 class="modal-title" id="modalTitleId">
                     decrypt image
                 </h5>
+               
                 <button
                     type="button"
-                    class="btn-close"
+                    class="btn btn-secondary"
                     data-bs-dismiss="modal"
-                    aria-label="Close"
-                ></button>
+                >
+                    Close
+                </button>
             </div>
             <div class="modal-body">
                 {/* {repository.password} */}
@@ -332,21 +954,18 @@ const RepositoryDetails = ({ itemID }) => {
            
         </div>
             </div>
-            <div class="modal-footer">
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                >
-                    Close
-                </button>
-                {/* <button type="button" class="btn btn-primary">Save</button> */}
-            </div>
+           
         </div>
     </div>
 </div>
 
         </div>
+
+        </>
+             )}
+
+             
+        </>
     );
 };
 

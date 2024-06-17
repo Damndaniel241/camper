@@ -106,6 +106,23 @@ class RepositorySerializer(serializers.ModelSerializer):
        
         fields = ['id','user','account_name','password','picture']
 
+    # def create(self, validated_data):
+    #     repository = Repository.objects.create(user=self.context['request'].user, **validated_data)
+    #     return repository
+
+    def update(self, instance, validated_data):
+        instance.account_name = validated_data.get('account_name', instance.account_name)
+        instance.password = validated_data.get('password', instance.password)
+        instance.picture = validated_data.get('picture', instance.picture)
+        instance.save()
+        return instance
+    # def update(self, instance, validated_data):
+    #     instance.account_name = validated_data.get('account_name', instance.account_name)
+    #     instance.password = validated_data.get('password', instance.password)
+    #     if 'picture' in validated_data:
+    #         instance.picture = validated_data.get('picture')
+    #     instance.save()
+    #     return instance
    
 class OneTimeImageKeySerializer(serializers.ModelSerializer):
     class Meta:

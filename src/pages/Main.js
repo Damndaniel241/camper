@@ -7,7 +7,7 @@ import { FaPencilAlt, FaEye, FaEyeSlash } from "react-icons/fa";
 import { RiDeleteBin6Fill } from "react-icons/ri";
 import PasswordValidator from "react-password-validattor";
 import axios from "axios";
-
+import { useShowNewEdit } from '../components/ShowNewEditContext';
 
 // import Steganographer from 'steganographer';
 
@@ -34,6 +34,7 @@ function Main() {
   const [decodedMessage, setDecodedMessage] = useState("");
   const [password, setPassword] = useState("");
   const [showNewEdit, setShowNewEdit] = useState(false);
+  // const { showNewEdit, setShowNewEdit } = useShowNewEdit();
   const [logins, setLogins] = useState([]);
   const [showItem, setShowItem] = useState(false);
   const [accountName, setAccountName] = useState("");
@@ -50,8 +51,6 @@ function Main() {
   const [page, setPage] = useState(1);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const { createCanvas, loadImage, ImageData } = require("canvas");
-  const { xorWith } = require("lodash"); // For simple encryption, you can use a library like lodash
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState('');
@@ -235,14 +234,7 @@ function Main() {
     setSelectedLogin(login);
   };
 
-  // useEffect(() => {
-  //  const storedNewLogin = localStorage.getItem(loginKey);
-  //    const newLogin = storedNewLogin ? JSON.parse(storedNewLogin) : null;
-
-  //   if (newLogin) {
-  //     setNewLogin(newLogin);
-  //   }
-  // }, []);
+ 
   
   const removeActiveItem = () => {
     if (activeItem) {
@@ -253,6 +245,9 @@ function Main() {
       setActiveItem(null);
     }
   };
+
+
+ 
 
   const handleNewEditClick = () => {
     setShowNewEdit(true);
@@ -420,6 +415,7 @@ function Main() {
 
   const handleItemClick = (itemId) => {
     setSelectedItemId(itemId);
+    setShowNewEdit(false);
   };
 
  
@@ -488,14 +484,15 @@ function Main() {
 
         <div className="edit">
           <div className="d-flex dropdown justify-content-end align-items-center  p-3">
-            <button
-              type="button"
-              className="dropdown-toggle"
-              data-bs-toggle="dropdown"
+            
+            <div
+             data-bs-toggle="dropdown"
+           
               aria-expanded="false"
-            >
+              style={{cursor:"pointer"}}>
               <BsThreeDots />
-            </button>
+              </div>
+          
             <ul class="dropdown-menu">
               <li>
                 <div
@@ -624,7 +621,7 @@ function Main() {
                     </div>
 
                     <p>or search for a picture online</p>
-                    {errorMsg && <p className="text-danger my-3">{errorMsg}</p>}
+                    {/* {errorMsg && <p className="text-danger my-3">{errorMsg}</p>} */}
                     <div class="mb-3 d-flex gap-2">
                       <input
                         type="text"
@@ -691,7 +688,7 @@ function Main() {
                       </div>
                       
                       {selectedImage && (
-                         <img src={getSelectedImageUrl(selectedImage)} alt="Selected Image"
+                         <img src={getSelectedImageUrl(selectedImage)} alt="loading images..."
                                       height="400rem"
                                       width="400rem"
                                       className="my-5 align-self-center "
@@ -701,7 +698,7 @@ function Main() {
 
                     </div>
 
-                    <div className="d-flex justify-content-end align-items-center ">
+                    <div className="d-flex justify-content-end align-items-center mb-3 ">
                       <button
                         type="button"
                         className="btn bg-grey text-black mx-3"
@@ -721,142 +718,13 @@ function Main() {
           )}
 
 
-          {/* VERY BIG CHANGE
-          {showEdit && (
-            <>
-              {activeItem && (
-                <div
-                  id="edit-container"
-          
-                  ref={editContainerRef}
-                >
-                  {editMode ? (
-                    <div className="container">
-
-                      <div className="d-flex mb-3 justify-content-between">
-                        <h1 className="me-5 gap-2 d-flex">
-                          <PiGlobeSimple />
-                          <span>Your Repository</span>
-                        </h1>
-
-                        <div
-                          className="p-1 px-3 hover-grey rounded-1 d-flex align-items-center gap-1"
-                          onClick={removeActiveItem}
-                        >
-                          <RiDeleteBin6Fill />
-                          <span>Remove</span>
-                        </div>
-                      </div>
-
-                      <div class="mb-3">
-                        <label for="" class="form-label">
-                          Account Name
-                        </label>
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          name=""
-                          id=""
-                          onChange={(e) => setAccountName(e.target.value)}
-                          aria-describedby="helpId"
-                          placeholder=""
-                        />
-                      </div>
-
-                      <div class="mb-3 d-flex gap-1">
-                        <label for="" class="form-label d-block">
-                          Password
-                        </label>
-                        <input
-                          type={isEditPasswordVisible ? 'text' : 'password'}
-                          class="form-control form-control-sm"
-                          name=""
-                          id=""
-                          onChange={() => setPassword({ password })}
-                          value={password}
-                          aria-describedby="helpId"
-                          placeholder=""
-                        />
-                        <span className="password-toggle align-self-center" onClick={toggleEditPasswordVisibility}>
-                        {isEditPasswordVisible ? (
-                        <FaEye/>
-                        ) : (
-                        <FaEyeSlash/>
-                        )}
-                        </span>
-                      </div>
-                      <div className="d-flex mb-3 justify-content-end align-items-end flex-column">
-                        <button
-                          className="btn btn-primary align-self-start"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            generatePassword();
-                          }}
-                        >
-                          Generate Password
-                        </button>
-                        <p className="align-self-start">{password}</p>
-                      </div>
-
-                      <div className="d-flex gap-4">
-                        <div
-                          className="p-1 px-3 bg-grey text-black btn rounded-1 d-flex align-items-center gap-1"
-                          onClick={() => setEditMode(false)}
-                        >
-                          <span>Cancel</span>
-                        </div>
-                        <div
-                          className="p-1 px-3 btn btn-primary  rounded-1 d-flex align-items-center gap-1"
-                          onClick={handleFormSubmit}
-                        >
-                          <span>Save Changes</span>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="d-flex justify-content-evenly p-5">
-                        <h1 className="me-5 gap-2 d-flex">
-                          <PiGlobeSimple />
-                          <span>{activeItem}</span>
-                        </h1>
-
-                        <div className="d-flex align-items-center  gap-4">
-                          <div
-                            className="p-1 px-3 hover-grey rounded-1 d-flex align-items-center gap-1"
-                            onClick={toggleEditMode}
-                          >
-                            <FaPencilAlt /> <span>Edit</span>
-                          </div>
-                          <div
-                            className="p-1 px-3 hover-grey rounded-1 d-flex align-items-center gap-1"
-                            onClick={removeActiveItem}
-                          >
-                            <RiDeleteBin6Fill />
-                            <span>Remove</span>
-                          </div>
-                        </div>
-                      </div>
-
-                   
-
-
-{activeItem && <RepositoryDetails itemID={activeItem} />}
-                      
-                    </>
-                  )}
-                </div>
-              )}
-            </>
-          )} */}
-
-
+       
 
 
 
 {selectedItemId && (
         <div id="details">
-          <RepositoryDetails itemID={selectedItemId} />
+          <RepositoryDetails itemID={selectedItemId}  />
         </div>
       )}
 
