@@ -6,7 +6,7 @@ import { RiDeleteBin6Fill } from "react-icons/ri";
 import PasswordValidator from "react-password-validattor";
 import { useShowNewEdit } from '../components/ShowNewEditContext';
 import { IoIosWarning } from "react-icons/io";
-
+import { RxCross1 } from "react-icons/rx";
 
 
 const API_URL = "https://api.unsplash.com/search/photos";
@@ -289,7 +289,7 @@ const RepositoryDetails = ({ itemID}) => {
 
         const toggleEditMode = () => {
             setEditMode(!editMode);
-         
+            // setAccountName(repository.accountName);
           };
         
 
@@ -423,18 +423,18 @@ try {
 
                         <div
                           className="p-1 px-3 hover-grey rounded-1 d-flex align-items-center gap-1"
-                        
+                         data-bs-toggle="modal"
+                              data-bs-target="#deleteId2"
                         >
                           <RiDeleteBin6Fill />
                           <span
-                          data-bs-toggle="modal"
-                              data-bs-target="#deleteId"
+                         
                           >Remove</span>
                         </div>
 
                         <div
                               class="modal fade"
-                              id="deleteId"
+                              id="deleteId2"
                               tabindex="-1"
                               data-bs-backdrop="static"
                               data-bs-keyboard="false"
@@ -457,7 +457,7 @@ try {
                                       class="btn-close"
                                       data-bs-dismiss="modal"
                                       aria-label="Close"
-                                    ></button>
+                                    > <RxCross1 /></button>
                                   </div>
                                   <div class="modal-body"><IoIosWarning />Warning: You are about to delete your repository. Are you sure you want to proceed?</div>
                                   <div class="modal-footer">
@@ -476,7 +476,7 @@ try {
                   
                             <script>
                               const myModal = new bootstrap.Modal(
-                                document.getElementById("deleteId"),
+                                document.getElementById("deleteId2"),
                                 options,
                               );
                             </script>
@@ -712,7 +712,7 @@ try {
                                     class="btn-close"
                                     data-bs-dismiss="modal"
                                     aria-label="Close"
-                                  ></button>
+                                  > <RxCross1 /></button>
                                 </div>
                                 <div class="modal-body">Are you sure you want to make changes?</div>
                                 <div class="modal-footer">
@@ -758,12 +758,12 @@ try {
                           </div>
                           <div
                             className="p-1 px-3 hover-grey rounded-1 d-flex align-items-center gap-1"
-                            // onClick={removeActiveItem}
+                              data-bs-toggle="modal"
+                              data-bs-target="#deleteId"
                           >
                             <RiDeleteBin6Fill />
                             <span
-                            data-bs-toggle="modal"
-                              data-bs-target="#deleteId"
+                          
                             >Remove</span>
                        
                           
@@ -793,9 +793,9 @@ try {
                                       class="btn-close"
                                       data-bs-dismiss="modal"
                                       aria-label="Close"
-                                    ></button>
+                                    ><RxCross1 /></button>
                                   </div>
-                                  <div class="modal-body"><IoIosWarning />Warning: You are about to delete your repository. Are you sure you want to proceed?</div>
+                                  <div class="modal-body"><IoIosWarning style={{color:"red"}} />Warning: You are about to delete your repository. Are you sure you want to proceed?</div>
                                   <div class="modal-footer">
                                     <button
                                       type="button"
@@ -887,10 +887,12 @@ try {
                
                 <button
                     type="button"
-                    class="btn btn-secondary"
+                    class="btn btn-close"
                     data-bs-dismiss="modal"
+                    aria-label='Close'
+                    style={{color:"black"}}
                 >
-                    Close
+                  <RxCross1 />
                 </button>
             </div>
             <div class="modal-body">

@@ -135,20 +135,6 @@ class OneTimeImageKeyViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Image verification failed.'}, status=status.HTTP_400_BAD_REQUEST)
         
 
-# @api_view(['POST'])
-# def verify_passkey(request):
-#     user_id = request.data.get('user_id')
-#     entered_passkey = request.data.get('passkey')
-    
-#     try:
-#         user = User.objects.get(id=user_id)
-#         passkey_obj = user.passkey
-#         is_valid = check_password(entered_passkey, passkey_obj.passkey)
-#         return Response({'is_valid': is_valid}, status=status.HTTP_200_OK)
-#     except User.DoesNotExist:
-#         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-#     except Exception as e:
-#         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class VerifyPasskeyView(APIView):
@@ -208,3 +194,13 @@ class VerifyImageKeyView(APIView):
                 return Response({'is_valid': False}, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({'is_valid': False}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class DeleteAllRepositoriesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        repositories = Repository.objects.filter(user=user)
+        count, _ = repositories.delete()
+        return Response({"message": f"{count} repositories deleted."}, status=status.HTTP_204_NO_CONTENT)

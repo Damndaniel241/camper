@@ -8,6 +8,10 @@ import { RiDeleteBin6Fill } from "react-icons/ri";
 import PasswordValidator from "react-password-validattor";
 import axios from "axios";
 import { useShowNewEdit } from '../components/ShowNewEditContext';
+import { AiFillDelete } from "react-icons/ai";
+import { TiExport } from "react-icons/ti";
+import { IoMdSettings } from "react-icons/io";
+import { RiLogoutCircleRLine } from "react-icons/ri";
 
 // import Steganographer from 'steganographer';
 
@@ -71,34 +75,31 @@ function Main() {
    const [savedItems, setSavedItems] = useState([]);
    const [selectedItemId, setSelectedItemId] = useState(null);
 
-  // const handleItemClick = () => {
-  //   setActiveItem(accountName);
-    
-  //   if (editContainerRef.current) {
-  //     editContainerRef.current.scrollIntoView({ behavior: "smooth" });
-  //   }
-  //   setEditMode(false);
-  // };
-
-
-//   const handleItemClick = (itemId) => {
-//     setActiveItem(itemId);
-//     if (editContainerRef.current) {
-//         editContainerRef.current.scrollIntoView({ behavior: "smooth" });
-//     }
-//     setEditMode(false);
-// };
-
- 
-  
-
-
-//   const filteredLogins = logins.filter((login) =>
-//   login.accountName.toLowerCase().includes(searchQuery.toLowerCase())
-// );
 
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isEditPasswordVisible, setIsEditPasswordVisible] = useState(false);
+  
+
+  const handleDeleteAll = async (e) => {
+    e.preventDefault();
+    if (window.confirm('Are you sure you want to delete all repositories? This action cannot be undone.')) {
+        try {
+            const response = await axios.delete('http://127.0.0.1:8000/api/repository/delete_all/', {
+              headers: {
+                'Authorization': `Token ${localStorage.getItem('token')}`
+              }});
+            // alert(response.data.message);
+            alert("deleted all repositories!");
+            window.location.reload();
+            // Optionally, refresh the page or update the state to reflect the changes
+        } catch (error) {
+            console.error('Error deleting all repositories:', error);
+            alert('Failed to delete all repositories. Please try again.');
+        }
+    }
+
+  }
+
   
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
@@ -205,7 +206,7 @@ function Main() {
 
         // Handle success response
         console.log('Response:', response.data);
-        alert('Data saved successfully.');
+        alert('Repository added successfully.');
 
         const newRepository = response.data;
 
@@ -230,9 +231,7 @@ function Main() {
   };
 
 
-  const handleLoadLogin = (login) => {
-    setSelectedLogin(login);
-  };
+
 
  
   
@@ -416,6 +415,7 @@ function Main() {
   const handleItemClick = (itemId) => {
     setSelectedItemId(itemId);
     setShowNewEdit(false);
+    // setEditMode(false);
   };
 
  
@@ -495,34 +495,39 @@ function Main() {
           
             <ul class="dropdown-menu">
               <li>
+                
                 <div
-                  onClick={clearLogins}
-                  class="dropdown-item"
+                
+                  className="dropdown-item d-flex align-items-center gap-2"
                   style={{ cursor: "pointer" }}
-                  href="#"
+                  onClick={handleDeleteAll}
                   
                 >
+                  < AiFillDelete/>
                   Remove All Accounts
                 </div>
               </li>
               <li>
-                <a className="dropdown-item" href="#">
+                <div className="dropdown-item d-flex align-items-center gap-2"  style={{ cursor: "pointer" }}>
+                  <TiExport/>
                   Export Accounts
-                </a>
+                </div>
               </li>
               <li>
-                <a class="dropdown-item" href="#">
+                <div className="dropdown-item d-flex align-items-center gap-2"  style={{ cursor: "pointer" }} >
+                  <IoMdSettings/>
                   Preferences
-                </a>
+                </div>
               </li>
               <li>
                 <div
                   onClick={logout}
-                  class="dropdown-item"
+                  className="dropdown-item d-flex align-items-center gap-2"
                   style={{ cursor: "pointer" }}
-                  href="#"
+              
                   
                 >
+                  < RiLogoutCircleRLine/>
                   Logout
                 </div>
               </li>
