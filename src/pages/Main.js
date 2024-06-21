@@ -12,6 +12,7 @@ import { AiFillDelete } from "react-icons/ai";
 import { TiExport } from "react-icons/ti";
 import { IoMdSettings } from "react-icons/io";
 import { RiLogoutCircleRLine } from "react-icons/ri";
+import { IoIosWarning } from "react-icons/io";
 
 // import Steganographer from 'steganographer';
 
@@ -378,11 +379,13 @@ function Main() {
   const navigate = useNavigate();
 
   const logout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     localStorage.removeItem('user_id');
     alert("sucessfully logged out");
     navigate('/');
+    }
 };
 
 
@@ -487,7 +490,7 @@ function Main() {
             
             <div
              data-bs-toggle="dropdown"
-           
+            className="grey-background p-2 rounded-5"
               aria-expanded="false"
               style={{cursor:"pointer"}}>
               <BsThreeDots />
@@ -521,15 +524,88 @@ function Main() {
               </li>
               <li>
                 <div
-                  onClick={logout}
-                  className="dropdown-item d-flex align-items-center gap-2"
+                 
+                  className="dropdown-item d-flex align-items-center gap-2 "
                   style={{ cursor: "pointer" }}
-              
-                  
+                  // data-bs-toggle="modal"
+                  // data-bs-target="#modalId2"
+                  onClick={logout}
                 >
                   < RiLogoutCircleRLine/>
                   Logout
                 </div>
+
+              
+                
+               
+                {/* <div
+                  class="modal fade"
+                  id="modalId2"
+                  tabindex="-1"
+                  data-bs-backdrop="static"
+                  data-bs-keyboard="false"
+                  
+                  role="dialog"
+                  aria-labelledby="modalTitleId"
+                  aria-hidden="true"
+                >
+                  <div
+                    class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-sm"
+                    role="document"
+                  >
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitleId">
+                          Logout
+                        </h5>
+                        <button
+                          type="button"
+                          class="btn-close"
+                          data-bs-dismiss="modal"
+                          aria-label="Close"
+                        ></button>
+                      </div>
+                      <div class="modal-body">
+                  Are you sure you want to logout?
+fgbnrghgbfbdfbfbfg
+                      </div>
+                      <div class="modal-footer">
+                        <button
+                          type="button"
+                          class="btn btn-secondary"
+                          data-bs-dismiss="modal"
+                        >
+                          No
+                        </button>
+                        <button  onClick={logout} type="button" class="btn btn-primary">Yes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+             
+                <script>
+                  const myModal = new bootstrap.Modal(
+                    document.getElementById("logout"),
+                    options,
+                  );
+                </script> */}
+                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               </li>
             </ul>
           </div>

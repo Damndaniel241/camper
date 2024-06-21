@@ -514,7 +514,7 @@ try {
                           class="form-control form-control-sm"
                           name=""
                           id=""
-                          onChange={() => setPassword({ password })}
+                          onChange={(e) => setPassword(e.target.value)}
                           value={password}
                           aria-describedby="helpId"
                           placeholder=""

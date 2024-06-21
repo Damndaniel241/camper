@@ -101,3 +101,7 @@ button,
 .userfont{
   font-size: 0.5em !important;
 }
+
+.grey-background:hover{
+  background-color: grey !important;
+}
