@@ -290,6 +290,7 @@ const RepositoryDetails = ({ itemID}) => {
         const toggleEditMode = () => {
             setEditMode(!editMode);
             // setAccountName(repository.accountName);
+            // setSelectedImage(repository.picture);
           };
         
 
