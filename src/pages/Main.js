@@ -4,7 +4,7 @@ import { LuPlus } from "react-icons/lu";
 import { BsThreeDots } from "react-icons/bs";
 import { PiGlobeSimple } from "react-icons/pi";
 import { FaPencilAlt, FaEye, FaEyeSlash } from "react-icons/fa";
-import { RiDeleteBin6Fill } from "react-icons/ri";
+
 import PasswordValidator from "react-password-validattor";
 import axios from "axios";
 import { useShowNewEdit } from '../components/ShowNewEditContext';
@@ -13,6 +13,7 @@ import { TiExport } from "react-icons/ti";
 import { IoMdSettings } from "react-icons/io";
 import { RiLogoutCircleRLine } from "react-icons/ri";
 import { IoIosWarning } from "react-icons/io";
+import Papa from 'papaparse';
 
 // import Steganographer from 'steganographer';
 
@@ -132,6 +133,7 @@ function Main() {
           }
         });
         setSavedItems(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error fetching saved items:', error);
       }
@@ -140,7 +142,27 @@ function Main() {
     fetchSavedItems();
   }, []);
 
+  const toPreferences = () => {
+    navigate('/preferences');
+  }
 
+
+
+  const exportToCSV = () => {
+    const csv = Papa.unparse(savedItems);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${username}_saved_items.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+const username = localStorage.getItem('username');
+  
 
 //   useEffect(() => {
 //     const fetchRepositories = async () => {
@@ -206,7 +228,7 @@ function Main() {
         });
 
         // Handle success response
-        console.log('Response:', response.data);
+     ;
         alert('Repository added successfully.');
 
         const newRepository = response.data;
@@ -284,7 +306,7 @@ function Main() {
       .split("")
       .sort(() => Math.random() - 0.5)
       .join("");
-    console.log(newPassword);
+    // console.log(newPassword);
     setPassword(newPassword);
   };
 
@@ -322,7 +344,7 @@ function Main() {
 
   const handleSearch = (event) => {
     event.preventDefault();
-    console.log(searchInput.current.value);
+    // console.log(searchInput.current.value);
     resetSearch();
   };
 
@@ -511,13 +533,13 @@ function Main() {
                 </div>
               </li>
               <li>
-                <div className="dropdown-item d-flex align-items-center gap-2"  style={{ cursor: "pointer" }}>
+                <div className="dropdown-item d-flex align-items-center gap-2" onClick={ exportToCSV} style={{ cursor: "pointer" }}>
                   <TiExport/>
                   Export Accounts
                 </div>
               </li>
               <li>
-                <div className="dropdown-item d-flex align-items-center gap-2"  style={{ cursor: "pointer" }} >
+                <div className="dropdown-item d-flex align-items-center gap-2" onClick={toPreferences} style={{ cursor: "pointer" }} >
                   <IoMdSettings/>
                   Preferences
                 </div>

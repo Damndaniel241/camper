@@ -112,6 +112,7 @@ function Login() {
       </span>
         </div>
       </div>
+      {error && (<div className="text-danger">{error}</div>)} 
       <button className="btn btn-primary mt-3" type="submit">Sign in</button>
       
     </form>

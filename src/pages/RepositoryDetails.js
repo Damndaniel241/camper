@@ -71,7 +71,7 @@ const RepositoryDetails = ({ itemID}) => {
           .split("")
           .sort(() => Math.random() - 0.5)
           .join("");
-        console.log(newPassword);
+        // console.log(newPassword);
         setPassword(newPassword);
       };
 
@@ -153,7 +153,7 @@ const RepositoryDetails = ({ itemID}) => {
                         }
                     });
                     setUserData(response.data);
-                    console.log(response.data);
+                    // console.log(response.data);
                     const shuffledQuestions = response.data.security_questions.sort(() => 0.5 - Math.random());
                     setSelectedQuestions(shuffledQuestions.slice(0, 3));
                 } catch (error) {
@@ -330,7 +330,7 @@ const RepositoryDetails = ({ itemID}) => {
         
           const handleSearch = (event) => {
             event.preventDefault();
-            console.log(searchInput.current.value);
+            // console.log(searchInput.current.value);
             resetSearch();
           };
         
