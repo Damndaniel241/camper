@@ -17,7 +17,7 @@ const ImageKey = () => {
         formData.append('image', imageFile);
 
         try {
-            const response = await axios.post('camper-5tkx.onrender.com/api/one_time_image_keys/', formData, {
+            const response = await axios.post('https://camper-5tkx.onrender.com/api/one_time_image_keys/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Token ${localStorage.getItem('token')}`
@@ -38,7 +38,7 @@ const ImageKey = () => {
     //     formData.append('image', imageFile);
 
     //     try {
-    //         const response = await axios.post('camper-5tkx.onrender.com/api/verify_image/', formData, {
+    //         const response = await axios.post('https://camper-5tkx.onrender.com/api/verify_image/', formData, {
     //             headers: {
     //                 'Content-Type': 'multipart/form-data',
     //                 'Authorization': `Token ${localStorage.getItem('token')}`

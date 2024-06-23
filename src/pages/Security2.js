@@ -56,7 +56,7 @@ function Security2() {
     }
 
     console.log(securityQuestions)
-    axios.post('camper-5tkx.onrender.com/api/security-questions/', { security_questions: securityQuestions }, {
+    axios.post('https://camper-5tkx.onrender.com/api/security-questions/', { security_questions: securityQuestions }, {
       headers: {
         'Authorization': `Token ${localStorage.getItem('token')}`
       }

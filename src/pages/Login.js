@@ -35,7 +35,7 @@ function Login() {
         e.preventDefault();
         console.log(formData);
         try {
-            const response = await axios.post('camper-5tkx.onrender.com/api/login/', JSON.stringify(formData), { headers: { 'Content-Type': 'application/json' } });
+            const response = await axios.post('https://camper-5tkx.onrender.com/api/login/', JSON.stringify(formData), { headers: { 'Content-Type': 'application/json' } });
                 
             alert("login successful");
             
