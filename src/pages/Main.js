@@ -86,7 +86,7 @@ function Main() {
     e.preventDefault();
     if (window.confirm('Are you sure you want to delete all repositories? This action cannot be undone.')) {
         try {
-            const response = await axios.delete('http://127.0.0.1:8000/api/repository/delete_all/', {
+            const response = await axios.delete('camper-5tkx.onrender.com/api/repository/delete_all/', {
               headers: {
                 'Authorization': `Token ${localStorage.getItem('token')}`
               }});
@@ -127,7 +127,7 @@ function Main() {
     // Fetch the saved items from the API when the component mounts
     const fetchSavedItems = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/repositories/', {
+        const response = await axios.get('camper-5tkx.onrender.com/api/repositories/', {
           headers: {
             'Authorization': `Token ${localStorage.getItem('token')}`
           }
@@ -167,7 +167,7 @@ const username = localStorage.getItem('username');
 //   useEffect(() => {
 //     const fetchRepositories = async () => {
 //         try {
-//             const response = await axios.get('http://127.0.0.1:8000/api/repositories/', {
+//             const response = await axios.get('camper-5tkx.onrender.com/api/repositories/', {
 //                 headers: {
 //                     'Authorization': `Token ${localStorage.getItem('token')}`
 //                 }
@@ -219,7 +219,7 @@ const username = localStorage.getItem('username');
 
     try {
         // Send data to backend endpoint
-        const response = await axios.post('http://127.0.0.1:8000/api/repositories/', formData, {
+        const response = await axios.post('camper-5tkx.onrender.com/api/repositories/', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
                 'Authorization':`Token ${localStorage.getItem('token')}`

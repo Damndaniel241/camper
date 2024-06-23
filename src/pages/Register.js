@@ -83,7 +83,7 @@ const generatePassword = () => {
     // }
     e.preventDefault();
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/register/', formData);
+      const response = await axios.post('camper-5tkx.onrender.com/api/register/', formData);
       
       alert(`Welcome ${formData.username}`)
       if (response.status === 201) {

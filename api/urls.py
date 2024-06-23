@@ -30,4 +30,4 @@ urlpatterns = [
  
 ]
 
-# curl -X DELETE http://127.0.0.1:8000/api/repositories/delete_all/ -H "Authorization: Token 9ee0befbadfc6284a06a77e40fec147d33642462"
+# curl -X DELETE camper-5tkx.onrender.com/api/repositories/delete_all/ -H "Authorization: Token 9ee0befbadfc6284a06a77e40fec147d33642462"

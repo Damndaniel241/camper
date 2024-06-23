@@ -93,7 +93,7 @@ const RepositoryDetails = ({ itemID}) => {
     useEffect(() => {
         const fetchRepositoryDetails = async () => {
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/repositories/${itemID}/`, {
+                const response = await axios.get(`camper-5tkx.onrender.com/api/repositories/${itemID}/`, {
                     headers: {
                         'Authorization': `Token ${localStorage.getItem('token')}`
                     }
@@ -125,7 +125,7 @@ const RepositoryDetails = ({ itemID}) => {
         }
     
 
-          await axios.put(`http://127.0.0.1:8000/api/repositories/${itemID}/`, formData, {
+          await axios.put(`camper-5tkx.onrender.com/api/repositories/${itemID}/`, formData, {
               headers: {
                   'Content-Type': 'multipart/form-data',
                   'Authorization':`Token ${localStorage.getItem('token')}`
@@ -147,7 +147,7 @@ const RepositoryDetails = ({ itemID}) => {
         useEffect(() => {
             const fetchUserData = async () => {
                 try {
-                    const response = await axios.get(`http://127.0.0.1:8000/api/user/${userId}/`, {
+                    const response = await axios.get(`camper-5tkx.onrender.com/api/user/${userId}/`, {
                         headers: {
                             'Authorization': `Token ${localStorage.getItem('token')}`
                         }
@@ -377,7 +377,7 @@ const RepositoryDetails = ({ itemID}) => {
 
   const handleDelete = async () => {
     try {
-        await axios.delete(`http://127.0.0.1:8000/api/repositories/${itemID}/`,{
+        await axios.delete(`camper-5tkx.onrender.com/api/repositories/${itemID}/`,{
         headers: {
           'Authorization': `Token ${localStorage.getItem('token')}`
       }});

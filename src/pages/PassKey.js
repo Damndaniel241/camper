@@ -21,7 +21,7 @@ const GeneratePasskeyPage = () => {
 
     axios
       .post(
-        "http://127.0.0.1:8000/api/passkey/",
+        "camper-5tkx.onrender.com/api/passkey/",
         { passkey: newPasskey },
         {
           headers: {
