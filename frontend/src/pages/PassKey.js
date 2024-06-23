@@ -59,7 +59,7 @@ const GeneratePasskeyPage = () => {
       <Header />
       <div className="container text-danger">
         Your passkey is very important for decrypting your passwords. You should
-        save it in a secure place
+        save it in a secure place.
       </div>
       <div className="d-flex flex-column container justify-content-center align-items-center height-100vh  gap-3">
     {showPasskeyButton && (    <button className="btn btn-primary " onClick={generatePasskey}>

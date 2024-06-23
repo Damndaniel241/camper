@@ -79,7 +79,9 @@ const ImageKey = () => {
   
     return (<>
         <div classNAme="justify-content-center align-items-center height-100vh">
-            <h1>One Time Image Key</h1>
+            <h1 className='text-danger my-3'>Warning!. This picture should be carefully stored. It would be used as part of the decryption process for all your passwords</h1>
+            <h1 className='mb-3'>One Time Image Key</h1>
+
             {/* <input type="file" onChange={handleFileChange} /> */}
             <div class="mb-3">
                       <label for="" class="form-label">
@@ -103,7 +105,7 @@ const ImageKey = () => {
            
             {imagePreviewUrl && (
     <div className="mb-3">
-        <label className="form-label">Image Preview</label>
+        <label className="form-label">You've selected this image.</label>
         <img src={imagePreviewUrl} alt="Image Preview" style={{ width: '100%', height: 'auto' }} />
     </div>
 )}
