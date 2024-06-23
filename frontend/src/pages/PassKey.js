@@ -69,7 +69,7 @@ const GeneratePasskeyPage = () => {
         {passkey && (
           <>
             <h2>Your One-Time Passkey has been generated</h2>
-            <h2>click below to download</h2>
+            <h2>click the button below to download</h2>
           </>
         )}
 

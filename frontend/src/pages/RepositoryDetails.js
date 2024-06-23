@@ -936,8 +936,7 @@ try {
                         type="file"
                         accept="image/*"
                         className="form-control"
-                        // value={imageKey}
-                        // onChange={(e) => setImageKey(e.target.value)}
+                    
                         onChange={(e) => handleImageChange(e)}
                     />
                 </div>
