@@ -11,6 +11,7 @@ import axios from "axios";
 const GeneratePasskeyPage = () => {
   const navigate = useNavigate();
   const [passkey, setPasskey] = useState("");
+  const [showPasskeyButton, setShowPasskeyButton] = useState(true);
   const username = localStorage.getItem('username');
 
   const generatePasskey = (e) => {
@@ -18,6 +19,7 @@ const GeneratePasskeyPage = () => {
     // Generate a unique passkey using uuid
     const newPasskey = uuidv4();
     setPasskey(newPasskey);
+    setShowPasskeyButton(false);
 
     axios
       .post(
@@ -49,6 +51,7 @@ const GeneratePasskeyPage = () => {
     doc.text(passkey, 10, 50);
     doc.save(`${username}_camper_passkey.pdf`);
     navigate("/imagekey");
+
   };
 
   return (
@@ -59,9 +62,9 @@ const GeneratePasskeyPage = () => {
         save it in a secure place
       </div>
       <div className="d-flex flex-column container justify-content-center align-items-center height-100vh  gap-3">
-        <button className="btn btn-primary " onClick={generatePasskey}>
+    {showPasskeyButton && (    <button className="btn btn-primary " onClick={generatePasskey}>
           Generate Passkey
-        </button>
+        </button> )}
 
         {passkey && (
           <>

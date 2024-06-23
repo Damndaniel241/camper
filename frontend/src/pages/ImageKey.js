@@ -6,12 +6,40 @@ const ImageKey = () => {
     const [imageFile, setImageFile] = useState(null);
     const [verificationResult, setVerificationResult] = useState(null);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
     const navigate = useNavigate();
+
+
+    const fileToBlob = (file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsArrayBuffer(file);
+        });
+      };
+    
+    
+      const convertFileToBlob = async (file) => {
+        const blob = await fileToBlob(file);
+        return new Blob([blob], { type: file.type });
+      };
+
+      const handleFileSelect = (event) => {
+        const file = event.target.files[0];
+        convertFileToBlob(file).then((blob) => setSelectedImage(blob));
+      };
 
     const handleFileChange = (e) => {
         setImageFile(e.target.files[0]);
         const file = e.target.files[0];
-        setSelectedImage(file);
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setImagePreviewUrl(reader.result);
+                
+                };
+                reader.readAsDataURL(file);
+            }
     };
 
 
@@ -73,15 +101,12 @@ const ImageKey = () => {
           
             <button type="button" className="btn btn-primary" onClick={handleImageUpload}>Upload Image Key</button>
            
-            {selectedImage && (
-                <div className='my-2'>
-                         <img src={getSelectedImageUrl(selectedImage)} alt="loading images..."
-                                      height="400rem"
-                                      width="400rem"
-                                      className="my-5 align-self-center "
-                                    />
-                                     </div>
-                                  )}
+            {imagePreviewUrl && (
+    <div className="mb-3">
+        <label className="form-label">Image Preview</label>
+        <img src={imagePreviewUrl} alt="Image Preview" style={{ width: '100%', height: 'auto' }} />
+    </div>
+)}
           
         </div>
         </>
