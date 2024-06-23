@@ -5,12 +5,28 @@ import { useNavigate } from "react-router-dom";
 const ImageKey = () => {
     const [imageFile, setImageFile] = useState(null);
     const [verificationResult, setVerificationResult] = useState(null);
-
+    const [selectedImage, setSelectedImage] = useState(null);
     const navigate = useNavigate();
 
     const handleFileChange = (e) => {
         setImageFile(e.target.files[0]);
+        const file = e.target.files[0];
+        setSelectedImage(file);
     };
+
+
+    const getSelectedImageUrl = (image) => {
+        if (image instanceof File) {
+          return URL.createObjectURL(image);
+        } else if (typeof image === "object" && image.hasOwnProperty("urls")) {
+          return image.urls.small;
+        } else {
+          return "";
+        }
+      };
+
+    
+  
 
     const handleImageUpload = async () => {
         const formData = new FormData();
@@ -32,28 +48,7 @@ const ImageKey = () => {
     };
 
 
-    //HANDLE IMAGE VERIFICATION
-    // const handleImageVerification = async () => {
-    //     const formData = new FormData();
-    //     formData.append('image', imageFile);
-
-    //     try {
-    //         const response = await axios.post('https://camper-5tkx.onrender.com/api/verify_image/', formData, {
-    //             headers: {
-    //                 'Content-Type': 'multipart/form-data',
-    //                 'Authorization': `Token ${localStorage.getItem('token')}`
-    //             }
-    //         });
-    //         setVerificationResult(response.data.success ? 'Verification successful' : 'Verification failed');
-    //     } catch (error) {
-    //         console.error('Error verifying image:', error.response.data);
-    //         setVerificationResult('Verification failed');
-    //     }
-    // };
-
-
-    // <button onClick={handleImageVerification}>Verify Image Key</button>
-    // {verificationResult && <p>{verificationResult}</p>}
+  
     return (<>
         <div classNAme="justify-content-center align-items-center height-100vh">
             <h1>One Time Image Key</h1>
@@ -77,7 +72,16 @@ const ImageKey = () => {
                     </div>
           
             <button type="button" className="btn btn-primary" onClick={handleImageUpload}>Upload Image Key</button>
-            
+           
+            {selectedImage && (
+                <div className='my-2'>
+                         <img src={getSelectedImageUrl(selectedImage)} alt="loading images..."
+                                      height="400rem"
+                                      width="400rem"
+                                      className="my-5 align-self-center "
+                                    />
+                                     </div>
+                                  )}
           
         </div>
         </>
